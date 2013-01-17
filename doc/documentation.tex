@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[cm]{fullpage}
 \usepackage{biblatex}
+\usepackage[normalem]{ulem}
 \bibliography{ref.bib}
 
 \title{
@@ -25,7 +26,13 @@ Parth Tripathi\\
 \maketitle
 \textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features:
 \begin{itemize}
-	\item Type System: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
+	\item \uline{Type System}: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
+	\item \uline{Exception}: Ada has modules which raise an error when certain conditions are not satisfied and another module which does corresponding error-handling.
+	\begin{itemize}
+		\item \uline{Predefined}: They are included in \emph{Standard} package. Some of them are: \textbf{Constraint\_Error, Program\_Error, Storage\_Error, Tasking\_Error}
+		\item \uline{Input$/$Output}: These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \textbf{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
+		\item \uline{Raising exceptions}: The \emph{raise} statement explicitly raises a specified exception.
+	\end{itemize}
 \end{itemize}
 \printbibliography
 \end{document}
