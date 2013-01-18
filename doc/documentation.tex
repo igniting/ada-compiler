@@ -27,21 +27,64 @@ Parth Tripathi\\
 \textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features:
 \begin{itemize}
 	\item \uline{Type System}: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
+	\begin{itemize}
+		\item type and subtypes: Creation of new types and subtypes with following features:
+		\begin{itemize}
+			\item constrained and unconstrained types
+			\item dynamic types
+		\end{itemize}
+	\end{itemize}
+	Following types would be in standard package:
+	\begin{itemize}
+		\item Signed Integers
+		\item Unsigned Integers
+		\item Enumerations:
+			\begin{itemize}
+				\item Operators: $<,<=,=,/=,>=,>$
+				\item Attributes: Pos, Val, Image, Value
+				\item Enumeration Literals: Character and Boolean as enumeration literals
+				\item subtype
+			\end{itemize}
+		\item Floating Point
+		\item Ordinary and Decimal Fixed Point
+		\item Array:
+		\begin{itemize}
+		\item Allow creation of arrays with:
+			\begin{itemize}
+				\item with known subrange
+				\item with unknown subranges
+				\item with aliased elements
+			\end{itemize}
+		\item Multi-Dimensional Arrays
+		\item Operations with Arrays: Assignment, Concatenate
+		\item Attributes: First, Last, Length, Range
+		\item Null Arrays		
+		\end{itemize}
+		\item Record: A record is a composite type that groups one or more fields. \\
+		Support for Null Record, Record with Values, Discriminated Record, Variant Record, Union, Tagged, Abstract Tagged, with Aliased Elements and Limited.
+		\item Access Type: Access types in Ada are what other languages call pointers. There are following Access types:
+			\begin{itemize}
+				\item Pool Access
+				\item General Access: Access to Variable and Access to Constant
+				\item Anonymous Access
+				\item Access to subprogram
+			\end{itemize}
+	\end{itemize}
 	\item \uline{Input/Output}: ADA has 5 independent libraries for Input and Output operations.
 	\begin{itemize}
-		\item \uline{Text I/O}: It provides support for line and page layout but the standard is free form text.
-		\item \uline{Direct I/O}: It is used for random access files which contain only elements of one specific type. It can also be used to position the file pointer to any element of that type, however one cannot freely choose the element type, the element type needs to be a definite subtype.
-		\item \uline{Sequential I/O}: It can be used to choose between definite and indefinite element types but one has to read and write the elements one after the other.
-		\item \uline{Storage I/O}: It allows to store one element inside a memory buffer. The element needs to be a
+		\item Text I/O: It provides support for line and page layout but the standard is free form text.
+		\item Direct I/O: It is used for random access files which contain only elements of one specific type. It can also be used to position the file pointer to any element of that type, however one cannot freely choose the element type, the element type needs to be a definite subtype.
+		\item Sequential I/O: It can be used to choose between definite and indefinite element types but one has to read and write the elements one after the other.
+		\item Storage I/O: It allows to store one element inside a memory buffer. The element needs to be a
 definite subtype. Storage I/O is useful in \emph{Concurrent programming} where it can be used to move elements from one task to another.
-		\item \uline{Stream I/O}: It allows to mix objects from different element types in one sequential file. In order to read/write from/to a stream each type provides a Read and Write attribute as well as an Input and Output attribute. These attributes are automatically generated for each type one declares.
+		\item Stream I/O: It allows to mix objects from different element types in one sequential file. In order to read/write from/to a stream each type provides a Read and Write attribute as well as an Input and Output attribute. These attributes are automatically generated for each type one declares.
 
 	\end{itemize}
 	\item \uline{Exception}: Ada has modules which raise an error when certain conditions are not satisfied and another module which does corresponding error-handling.
 	\begin{itemize}
-		\item \uline{Predefined}: They are included in \emph{Standard} package. Some of them are: \textbf{Constraint\_Error, Program\_Error, Storage\_Error, Tasking\_Error}
-		\item \uline{Input$/$Output}: These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \textbf{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
-		\item \uline{Raising exceptions}: The \emph{raise} statement explicitly raises a specified exception.
+		\item Predefined: They are included in \emph{Standard} package. Some of them are: \textbf{Constraint\_Error, Program\_Error, Storage\_Error, Tasking\_Error}
+		\item Input$/$Output: These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \textbf{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
+		\item Raising exceptions: The \emph{raise} statement explicitly raises a specified exception.
 	\end{itemize}
 \end{itemize}
 \printbibliography
