@@ -24,7 +24,9 @@ Parth Tripathi\\
 
 \begin{document}
 \maketitle
-\textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features:
+\textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. 
+\section{Detailed Specification}
+In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features:
 
 \begin{itemize}
 	\item \uline{Type System}: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
@@ -67,6 +69,12 @@ definite subtype. Storage I/O is useful in \emph{Concurrent programming} where i
 		\item \textbf{Input$/$Output:} These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \emph{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
 		\item \textbf{Raising exceptions:} The \emph{raise} statement explicitly raises a specified exception.
 	\end{itemize}
+\end{itemize}
+\section{Implementation}
+\begin{itemize}
+	\item \uline{Lexical Analyser}: It is typically preferable to have a parser be fed a token-stream as input, rather than having it consume the input character-stream directly. Lex is often used to produce such a token-stream. So we will be using \textbf{Lex} as our Lexical Analyzer.
+	\item Parser:           YaCC
+	\item Langauge:         C
 \end{itemize}
 \printbibliography
 \end{document}
