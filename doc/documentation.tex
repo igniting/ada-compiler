@@ -24,7 +24,9 @@ Parth Tripathi\\
 
 \begin{document}
 \maketitle
-\textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features \cite{Wiki}:
+\textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}.
+\section{Detailed Specifications}
+In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features \cite{Wiki}:
 \begin{itemize}
 	\item \uline{Type System}: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
 	\begin{itemize}
@@ -104,5 +106,12 @@ definite subtype.
 		\item \textbf{Raising exceptions:} The \emph{raise} statement explicitly raises a specified exception.
 	\end{itemize}
 \end{itemize}
+\section{Implementation}
+	\begin{itemize}
+		\item Lexical Analyser: We will be using flex. \cite{flex}
+		\item Parser: We will be using GNU bison. \cite{bison}
+		\item Base Language: C
+		\item Target Architecture: MIPS
+	\end{itemize}
 \printbibliography
 \end{document}
