@@ -25,23 +25,47 @@ Parth Tripathi\\
 \begin{document}
 \maketitle
 \textbf{Ada} is a strongly typed, modular, object oriented, concurrent, readable and expressible high-level computer programming language \cite{AdaIC}. In this project we would be creating a compiler for a subset of Ada language. We would be implementing following features:
+
 \begin{itemize}
 	\item \uline{Type System}: Ada's type system is governed by four principles: Strong typing, Static typing, Abstraction and Name equivalence.
-	\item \uline{Input/Output}: ADA has 5 independent libraries for Input and Output operations.
+	\item \uline{Conditionals}: These are blocks of code that will only execute if a particular expression (the condition) is true. They are categorized into:
 	\begin{itemize}
-		\item \uline{Text I/O}: It provides support for line and page layout but the standard is free form text.
-		\item \uline{Direct I/O}: It is used for random access files which contain only elements of one specific type. It can also be used to position the file pointer to any element of that type, however one cannot freely choose the element type, the element type needs to be a definite subtype.
-		\item \uline{Sequential I/O}: It can be used to choose between definite and indefinite element types but one has to read and write the elements one after the other.
-		\item \uline{Storage I/O}: It allows to store one element inside a memory buffer. The element needs to be a
+		\item \textbf{if-else:} When the program arrives at an "if" statement during its execution, control will "branch" off into one of two or more "directions". If the original condition is met, then all the code within the first statement is executed. The optional else section specifies an alternative statement that will be executed if the condition is false. Only one statement in the entire block will be executed. This statement will be the first one with a
+condition which evaluates to be true.
+		\item \textbf{case:} The case statement is used to compare one specific variable against several constant expressions. If one of the several cases are not satisfied then the statement given in \emph{others} is executed.		
+	\end{itemize}	
+	
+	\item \uline{Unconditionals}: They let you change the flow of the program without a condition. They are categorized into:
+		\begin{itemize}
+			\item \textbf{goto:} It transfers the control to the statement after the specified \emph{label}.
+			\item \textbf{return:} It ends a function and returns to the calling procedure or function. For \emph{procedures} just return is used whereas for \emph{functions} return is followed by a \emph{value}.
+		\end{itemize}
+		
+	\item \uline{Loops}: They allow you to have a set of statements repeated over and over again. They are categorized into:
+		\begin{itemize}
+			\item \textbf{for loop:} It counts a specific variable from a given start value up or down to a specific end value and keeps on repeating the statements enclosed until the final value is reached.
+			\item \textbf{while loop:} This loop has a condition at the beginning. The statements are repeated as long as the condition is met. If the condition is not met at the very beginning then the statements inside the loop are never executed.
+			\item \textbf{until loop:} This loop has a condition at the end and the statements are repeated until the condition is met. Since the check is at the end the statements are at least executed once.
+			\item \textbf{exit loop:} It is used when one wants to do first calculation and exit the loop when a certain criterion is met. However when the criterion is not met there is something else to be done. Hence for this purpose \emph{exit} condition is in the middle.
+			\item \textbf{array loop:} This loop iterates over every element of the array specified.
+		\end{itemize}
+		
+	\item \uline{Input/Output}: ADA has 5 independent libraries for Input and Output operations.
+	
+	\begin{itemize}
+		\item \textbf{Text I/O:} It provides support for line and page layout but the standard is free form text.
+		\item \textbf{Direct I/O:} It is used for random access files which contain only elements of one specific type. It can also be used to position the file pointer to any element of that type, however one cannot freely choose the element type, the element type needs to be a definite subtype.
+		\item \textbf{Sequential I/O:} It can be used to choose between definite and indefinite element types but one has to read and write the elements one after the other.
+		\item \textbf{Storage I/O:} It allows to store one element inside a memory buffer. The element needs to be a
 definite subtype. Storage I/O is useful in \emph{Concurrent programming} where it can be used to move elements from one task to another.
-		\item \uline{Stream I/O}: It allows to mix objects from different element types in one sequential file. In order to read/write from/to a stream each type provides a Read and Write attribute as well as an Input and Output attribute. These attributes are automatically generated for each type one declares.
-
+		\item \textbf{Stream I/O:} It allows to mix objects from different element types in one sequential file. In order to read/write from/to a stream each type provides a Read and Write attribute as well as an Input and Output attribute. These attributes are automatically generated for each type one declares.
 	\end{itemize}
+	
 	\item \uline{Exception}: Ada has modules which raise an error when certain conditions are not satisfied and another module which does corresponding error-handling.
 	\begin{itemize}
-		\item \uline{Predefined}: They are included in \emph{Standard} package. Some of them are: \textbf{Constraint\_Error, Program\_Error, Storage\_Error, Tasking\_Error}
-		\item \uline{Input$/$Output}: These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \textbf{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
-		\item \uline{Raising exceptions}: The \emph{raise} statement explicitly raises a specified exception.
+		\item \textbf{Predefined:} They are included in \emph{Standard} package. Some of them are: \emph{Constraint\_Error, Program\_Error, Storage\_Error, Tasking\_Error}
+		\item \textbf{Input$/$Output:} These exceptions raised by subprograms of the predefined package \emph{Ada.Text\_IO}. Some of them are \emph{End\_Error, Data\_Error,Mode\_Error,Layout\_Error}
+		\item \textbf{Raising exceptions:} The \emph{raise} statement explicitly raises a specified exception.
 	\end{itemize}
 \end{itemize}
 \printbibliography
