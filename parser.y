@@ -10,7 +10,7 @@
 %token        AND
 %token        ARRAY
 %token        AT
-%token        BEGIN
+%token        BegiN
 %token        BODY
 %token        CASE
 %token        CONSTANT
@@ -38,7 +38,7 @@
 %token        MOD
 %token        NEW
 %token        NOT
-%token        NULL
+%token        NuLL
 %token        OF
 %token        OR
 %token        OTHERS
@@ -78,11 +78,14 @@
 %}
 
 %%
-program:
-        XOR     {printf("Hello World!\n");};
+program:;
 %%
 
-int main() {
+main() {
         yyparse();
         return 0;
+}
+
+yyerror(char *s) {
+        fprintf(stderr, "%s\n", s);
 }
