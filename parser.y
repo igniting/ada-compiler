@@ -1,4 +1,9 @@
 /**************Parser for ADA*************/
+%{
+#include <stdio.h>
+#include <stdlib.h>
+# include <string.h>
+%}
 
 %token        ABORT
 %token        ABS
@@ -10,7 +15,7 @@
 %token        AND
 %token        ARRAY
 %token        AT
-%token        BEGIN
+%token        BEGiN
 %token        BODY
 %token        CASE
 %token        CONSTANT
@@ -38,7 +43,7 @@
 %token        MOD
 %token        NEW
 %token        NOT
-%token        NULL
+%token        NuLL
 %token        OF
 %token        OR
 %token        OTHERS
@@ -73,10 +78,6 @@
 %token        WITH
 %token        XOR
 
-%{
-#include <stdio.h>
-%}
-
 %%
 program:
         XOR     {printf("Hello World!\n");};
@@ -86,3 +87,4 @@ int main() {
         yyparse();
         return 0;
 }
+yyerror(char *s) {fprintf(stderr, "%s\n", s);}

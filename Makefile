@@ -7,4 +7,4 @@ lex.yy.c:lexer.l
 y.tab.c y.tab.h:parser.y
 	yacc -vd parser.y
 clean:
-	rm -f lex.yy.c lex
+	rm -f lex.yy.c lex y.tab.c y.tab.h y.output

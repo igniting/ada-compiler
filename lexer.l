@@ -76,7 +76,7 @@ TABLE key_table[MAX] = {
         {"AND",         AND},
         {"ARRAY",       ARRAY},
         {"AT",          AT},
-        {"BEGIN",       BEGIN},
+        {"BEGIN",       BEGiN},
         {"BODY",        BODY},
         {"CASE",        CASE},
         {"CONSTANT",    CONSTANT},
@@ -104,7 +104,7 @@ TABLE key_table[MAX] = {
         {"MOD",         MOD},
         {"NEW",         NEW},
         {"NOT",         NOT},
-        {"NULL",        NULL},
+        {"NULL",        NuLL},
         {"OF",          OF},
         {"OR",          OR},
         {"OTHERS",      OTHERS},
@@ -140,7 +140,3 @@ TABLE key_table[MAX] = {
         {"XOR",         XOR}
 };
                 
-main()
-{
-    yylex();
-}
