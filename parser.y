@@ -1,5 +1,20 @@
 /**************Parser for ADA*************/
 
+%token        IDENTIFIER
+%token        NUMBER
+%token        CHARACTER
+%token        STRING
+%token        TICK
+%token        ARROW
+%token        DDOT
+%token        EXPONENTIATE
+%token        ASSIGNMENT
+%token        INEQUALITY
+%token        GE
+%token        LE
+%token        LLB
+%token        RLB
+%token        BOX
 %token        ABORT
 %token        ABS
 %token        ABSTRACT

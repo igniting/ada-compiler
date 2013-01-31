@@ -25,37 +25,36 @@ STRING              \"((\"\")|{NON_QUOTE})*\"
 COMMENT             --[^\n]*
 
 %%
-{IDENTIFIER}    ;
-{NUMBER}        ;
-{CHARACTER}     ;
-{STRING}        ;
+{IDENTIFIER}    return(IDENTIFIER);
+{NUMBER}        return(NUMBER);
+{CHARACTER}     return(CHARACTER);
+{STRING}        return(STRING);
 {COMMENT}       ;
-"&"             ;
-"'"             ;
-"("             ;
-")"             ;
-"*"             ;
-"+"             ;
-","             ;
-"-"             ;
-"."             ;
-"/"             ;
-":"             ;
-";"             ;
-"<"             ;
-"="             ;
-">"             ;
-"|"             ;
-"=>"            ;
-".."            ;
-"**"            ;
-":="            ;
-"/="            ;
-">="            ;
-"<="            ;
-"<<"            ;
-">>"            ;
-"<>"            ;
+"'"             return(TICK);
+"("             return('(');
+")"             return(')');
+"*"             return('*');
+"+"             return('+');
+","             return(',');
+"-"             return('-');
+"."             return('.');
+"/"             return('/');
+":"             return(':');
+";"             return(';');
+"<"             return('<');
+"="             return('=');
+">"             return('>');
+"|"             return('|');
+"=>"            return(ARROW);
+".."            return(DDOT);
+"**"            return(EXPONENTIATE);
+":="            return(ASSIGNMENT);
+"/="            return(INEQUALITY);
+">="            return(GE);
+"<="            return(LE);
+"<<"            return(LLB);
+">>"            return(RLB);
+"<>"            return(BOX);
 %%
 
 typedef struct {
