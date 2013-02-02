@@ -128,7 +128,7 @@ COMMENT             --[^\n]*
 {STRING}        printf("STRING");
 {COMMENT}       printf("COMMENT");
 [ \t\n]		ECHO;
-.		fprintf(stderr,"ILLEGAL CHARACTER");
+.		printf("ILLEGAL");
 %%
 
 main() {
