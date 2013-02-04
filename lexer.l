@@ -25,118 +25,106 @@ STRING              \"((\"\")|{NON_QUOTE})*\"
 COMMENT             --[^\n]*
 
 %%
-{IDENTIFIER}    ;
-{NUMBER}        ;
-{CHARACTER}     ;
-{STRING}        ;
+(?i:ABORT)      return(ABORT);
+(?i:ABS)        return(ABS);
+(?i:ABSTRACT)   return(ABSTRACT);
+(?i:ACCEPT)     return(ACCEPT);
+(?i:ACCESS)     return(ACCESS);
+(?i:ALIASED)    return(ALIASED);
+(?i:ALL)        return(ALL);
+(?i:AND)        return(AND);
+(?i:ARRAY)      return(ARRAY);
+(?i:AT)         return(AT);
+(?i:BegiN)      return(BegiN);
+(?i:BODY)       return(BODY);
+(?i:CASE)       return(CASE);
+(?i:CONSTANT)   return(CONSTANT);
+(?i:DECLARE)    return(DECLARE);
+(?i:DELAY)      return(DELAY);
+(?i:DELTA)      return(DELTA);
+(?i:DIGITS)     return(DIGITS);
+(?i:DO)         return(DO);
+(?i:ELSE)       return(ELSE);
+(?i:ELSIF)      return(ELSIF);
+(?i:END)        return(END);
+(?i:ENTRY)      return(ENTRY);
+(?i:EXCEPTION)  return(EXCEPTION);
+(?i:EXIT)       return(EXIT);
+(?i:FOR)        return(FOR);
+(?i:FUNCTION)   return(FUNCTION);
+(?i:GENERIC)    return(GENERIC);
+(?i:GOTO)       return(GOTO);
+(?i:IF)         return(IF);
+(?i:IN)         return(IN);
+(?i:INTERFACE)  return(INTERFACE);
+(?i:IS)         return(IS);
+(?i:LIMITED)    return(LIMITED);
+(?i:LOOP)       return(LOOP);
+(?i:MOD)        return(MOD);
+(?i:NEW)        return(NEW);
+(?i:NOT)        return(NOT);
+(?i:NuLL)       return(NuLL);
+(?i:OF)         return(OF);
+(?i:OR)         return(OR);
+(?i:OTHERS)     return(OTHERS);
+(?i:OUT)        return(OUT);
+(?i:OVERRIDING) return(OVERRIDING);
+(?i:PACKAGE)    return(PACKAGE);
+(?i:PRAGMA)     return(PRAGMA);
+(?i:PRIVATE)    return(PRIVATE);
+(?i:PROCEDURE)  return(PROCEDURE);
+(?i:PROTECTED)  return(PROTECTED);
+(?i:RAISE)      return(RAISE);
+(?i:RANGE)      return(RANGE);
+(?i:RECORD)     return(RECORD);
+(?i:REM)        return(REM);
+(?i:RENAMES)    return(RENAMES);
+(?i:REQUEUE)    return(REQUEUE);
+(?i:RETURN)     return(RETURN);
+(?i:REVERSE)    return(REVERSE);
+(?i:SELECT)     return(SELECT);
+(?i:SEPARATE)   return(SEPARATE);
+(?i:SUBTYPE)    return(SUBTYPE);
+(?i:SYNCHRONIZED)return(SYNCHRONIZED);
+(?i:TAGGED)     return(TAGGED);
+(?i:TASK)       return(TASK);
+(?i:TERMINATE)  return(TERMINATE);
+(?i:THEN)       return(THEN);
+(?i:TYPE)       return(TYPE);
+(?i:UNTIL)      return(UNTIL);
+(?i:USE)        return(USE);
+(?i:WHEN)       return(WHEN);
+(?i:WHILE)      return(WHILE);
+(?i:WITH)       return(WITH);
+(?i:XOR)        return(XOR);
+"'"             return(TICK);
+"("             return('(');
+")"             return(')');
+"*"             return('*');
+"+"             return('+');
+","             return(',');
+"-"             return('-');
+"."             return('.');
+"/"             return('/');
+":"             return(':');
+";"             return(';');
+"<"             return('<');
+"="             return('=');
+">"             return('>');
+"|"             return('|');
+"=>"            return(ARROW);
+".."            return(DDOT);
+"**"            return(EXPONENTIATE);
+":="            return(ASSIGNMENT);
+"/="            return(INEQUALITY);
+">="            return(GE);
+"<="            return(LE);
+"<<"            return(LLB);
+">>"            return(RLB);
+"<>"            return(BOX);
+{IDENTIFIER}    return(IDENTIFIER);
+{NUMBER}        return(NUMBER);
+{CHARACTER}     return(CHARACTER);
+{STRING}        return(STRING);
 {COMMENT}       ;
-"&"             ;
-"'"             ;
-"("             ;
-")"             ;
-"*"             ;
-"+"             ;
-","             ;
-"-"             ;
-"."             ;
-"/"             ;
-":"             ;
-";"             ;
-"<"             ;
-"="             ;
-">"             ;
-"|"             ;
-"=>"            ;
-".."            ;
-"**"            ;
-":="            ;
-"/="            ;
-">="            ;
-"<="            ;
-"<<"            ;
-">>"            ;
-"<>"            ;
 %%
-
-typedef struct {
-        char* key;
-        int value;
-}TABLE;
-
-#define MAX 72
-
-TABLE key_table[MAX] = {
-        {"ABORT",       ABORT},
-        {"ABS",         ABS},
-	{"ABSTRACT",	ABSTRACT},
-        {"ACCEPT",      ACCEPT},
-        {"ACCESS",      ACCESS},
-	{"ALIASED",	ALIASED},
-        {"ALL",         ALL},
-        {"AND",         AND},
-        {"ARRAY",       ARRAY},
-        {"AT",          AT},
-        {"BEGIN",       BEGiN},
-        {"BODY",        BODY},
-        {"CASE",        CASE},
-        {"CONSTANT",    CONSTANT},
-        {"DECLARE",     DECLARE},
-        {"DELAY",       DELAY},
-        {"DELTA",       DELTA},
-        {"DIGITS",      DIGITS},
-        {"DO",          DO},
-        {"ELSE",        ELSE},
-        {"ELSIF",       ELSIF},
-        {"END",         END},
-        {"ENTRY",       ENTRY},
-        {"EXCEPTION",   EXCEPTION},
-        {"EXIT",        EXIT},
-        {"FOR",         FOR},
-        {"FUNCTION",    FUNCTION},
-        {"GENERIC",     GENERIC},
-        {"GOTO",        GOTO},
-        {"IF",          IF},
-        {"IN",          IN},
-        {"INTERFACE",   INTERFACE},
-        {"IS",          IS},
-        {"LIMITED",     LIMITED},
-        {"LOOP",        LOOP},
-        {"MOD",         MOD},
-        {"NEW",         NEW},
-        {"NOT",         NOT},
-        {"NULL",        NuLL},
-        {"OF",          OF},
-        {"OR",          OR},
-        {"OTHERS",      OTHERS},
-        {"OUT",         OUT},
-        {"OVERRIDING",  OVERRIDING},
-        {"PACKAGE",     PACKAGE},
-        {"PRAGMA",      PRAGMA},
-        {"PRIVATE",     PRIVATE},
-        {"PROCEDURE",   PROCEDURE},
-	{"PROTECTED",	PROTECTED},
-        {"RAISE",       RAISE},
-        {"RANGE",       RANGE},
-        {"RECORD",      RECORD},
-        {"REM",         REM},
-        {"RENAMES",     RENAMES},
-	{"REQUEUE",	REQUEUE},
-        {"RETURN",      RETURN},
-        {"REVERSE",     REVERSE},
-        {"SELECT",      SELECT},
-        {"SEPARATE",    SEPARATE},
-        {"SUBTYPE",     SUBTYPE},
-        {"SYNCHRONIZED",SYNCHRONIZED},
-	{"TAGGED",	TAGGED},
-        {"TASK",        TASK},
-        {"TERMINATE",   TERMINATE},
-        {"THEN",        THEN},
-        {"TYPE",        TYPE},
-	{"UNTIL",	UNTIL},
-        {"USE",         USE},
-        {"WHEN",        WHEN},
-        {"WHILE",       WHILE},
-        {"WITH",        WITH},
-        {"XOR",         XOR}
-};
-                

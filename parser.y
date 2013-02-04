@@ -5,6 +5,21 @@
 # include <string.h>
 %}
 
+%token        IDENTIFIER
+%token        NUMBER
+%token        CHARACTER
+%token        STRING
+%token        TICK
+%token        ARROW
+%token        DDOT
+%token        EXPONENTIATE
+%token        ASSIGNMENT
+%token        INEQUALITY
+%token        GE
+%token        LE
+%token        LLB
+%token        RLB
+%token        BOX
 %token        ABORT
 %token        ABS
 %token        ABSTRACT
@@ -15,7 +30,7 @@
 %token        AND
 %token        ARRAY
 %token        AT
-%token        BEGiN
+%token        BegiN
 %token        BODY
 %token        CASE
 %token        CONSTANT
@@ -79,12 +94,40 @@
 %token        XOR
 
 %%
-program:
-        XOR     {printf("Hello World!\n");};
+name		:	directname
+		|	indexed_comp
+		|	slice	
+		;
+		
+directname	:	IDENTIFIER
+		;
+		
+prefix		:	name
+		|	implicitderef
+		;
+		
+explicitderef	:	name.all
+		;
+		
+implicitderef	:	name
+		;
+		
+indexed_comp	:	prefix'('expression_s')'
+		;
+		
+expression_s	:	expression
+		|	expression_s ',' expression
+		;
+		
+slice		:	prefix'('  ')'		
+
 %%
 
-int main() {
+main() {
         yyparse();
         return 0;
 }
-yyerror(char *s) {fprintf(stderr, "%s\n", s);}
+
+yyerror(char *s) {
+        fprintf(stderr, "%s\n", s);
+}
