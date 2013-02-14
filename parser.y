@@ -97,6 +97,8 @@
 name		:	directname
 		|	indexed_comp
 		|	slice	
+		|	selected_comp
+		|	attribute_ref
 		;
 		
 directname	:	IDENTIFIER
@@ -119,7 +121,32 @@ expression_s	:	expression
 		|	expression_s ',' expression
 		;
 		
-slice		:	prefix'('  ')'		
+slice		:	prefix'(' discreterange ')'
+		;
+		
+selected_comp	:	prefix '.' selector_name
+		;		
+		
+selector_name	:	IDENTIFIER
+		|	CHARACTER
+		|	OPERATOR
+		;
+		
+attribute_ref	:	prefix'''attribute_id
+		;
+		
+attribute_id	:	IDENTIFIER
+		|	DELTA
+		|	DIGITS
+		|	ACCESS
+		|	MOD
+		;
+		
+literal		:	NUMBER
+		|	CHARACTER
+		|	NuLL
+		|	STRING
+		;
 
 %%
 
