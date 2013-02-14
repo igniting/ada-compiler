@@ -1,7 +1,7 @@
 /**************Parser for ADA*************/
 %{
-#include <stdio.h>
-#include <stdlib.h>
+# include <stdio.h>
+# include <stdlib.h>
 # include <string.h>
 %}
 
@@ -160,73 +160,7 @@ discrete_choice     :   expression
                 
 subtype_mark        :   name
                     ;
-expression			:	relation
-					|	relation AND expression
-					|	relation OR expression
-					|	relation XOR expression
-					|	relation AND THEN expression
-					|	relation OR ELSE expression
-					;
-choice_expression	:	choice_relation
-					|	choice_relation AND choice_expression
-					|	choice_relation OR choice_expression
-					|	choice_relation XOR choice_expression
-					|	choice_relation AND THEN choice_expression
-					|	choice_relation OR ELSE choice_expression
-					;
-rel_op				:	'='
-					|	INEQUALITY
-					|	'<'
-					|	LE
-					|	'>'
-					|	GE
-					;
-choice_relation		:	simple_expression
-					|	simple_expression rel_op simple_expression
-					;
-relation			:	simple_expression
-					|	simple_expression rel_op simple_expression
-					|	simple_expression not IN mem_choice_list
-					;
-not					:	/* Empty */
-					|	NOT
-					;
-mem_choice_list		:	mem_choice
-					|	mem_choice mem_choice_list
-					;
-mem_choice			:	choice_expression
-					;
-simple_expression	:	unary_add term binary_term
-					;
-binary_term			:	/* Empty */
-					|	binary_add term binary_term
-					;
-unary_add			:	/* Empty */
-					|	'+'
-					|	'-'
-					;
-binary_add			:	'+'
-					|	'-'
-					|	'&'
-					;
-term				:	factor
-					|	factor mul_op factor
-					;
-mul_op				:	'*'
-					|	'/'
-					|	MOD
-					|	REM
-					;
-factor				:	primary
-					|	primary EXPONENTIATE primary
-					|	ABS primary
-					|	NOT primary
-					;
-primary				:	NUMBER
-					|	NuLL
-					|	STRING
-					|	'('expression')'
-					;
+
 name		        :	directname
 		            |	indexed_comp
 		            |	slice	
@@ -241,7 +175,7 @@ prefix		        :	name
 		            |	implicitderef
 		            ;
 		
-explicitderef	    :	name.all
+explicitderef	    :	name '.' ALL
 		            ;
 		
 implicitderef	    :	name
@@ -280,6 +214,177 @@ literal		        :	NUMBER
 		            |	NuLL
 		            |	STRING
 		            ;
+		            
+expression			:	relation
+					|	expression logical_op relation
+					|	expression short_circuit_op relation
+					;
+choice_expression	:	choice_relation
+					|	choice_relation AND choice_expression
+					|	choice_relation OR choice_expression
+					|	choice_relation XOR choice_expression
+					|	choice_relation AND THEN choice_expression
+					|	choice_relation OR ELSE choice_expression
+					;
+rel_op				:	'='
+					|	INEQUALITY
+					|	'<'
+					|	LE
+					|	'>'
+					|	GE
+					;
+choice_relation		:	simple_expression
+					|	simple_expression rel_op simple_expression
+					;
+relation			:	simple_expression
+					|	simple_expression rel_op simple_expression
+					|	simple_expression membership mem_choice_list
+					;
+membership		    :	IN
+					|	NOT IN
+					;
+mem_choice_list		:	mem_choice
+					|	mem_choice mem_choice_list
+					;
+mem_choice			:	choice_expression
+                    |   range
+					;
+simple_expression	:   term
+                    |   unary term
+                    |   simple_expression binary_add term 
+					;
+unary   			:   '+'
+					|	'-'
+					;
+binary_add			:	'+'
+					|	'-'
+					|	'&'
+					;
+term				:	factor
+					|	term mul_op factor
+					;
+range               :   simple_expression DDOT simple_expression
+                    |   name TICK RANGE
+                    |   name TICK RANGE '(' expression ')'
+                    ;
+mul_op				:	'*'
+					|	'/'
+					|	MOD
+					|	REM
+					;
+factor				:	primary
+					|	primary EXPONENTIATE primary
+					|	ABS primary
+					|	NOT primary
+					;
+primary				:	NUMBER
+					|	NuLL
+					|	STRING
+					|	'('expression')'
+					;
+logical_op          :   AND
+                    |   OR
+                    |   XOR
+                    ;
+short_circuit_op    :   AND THEN
+                    |   OR ELSE
+                    ;
+highest_prec_op     :   EXPONENTIATE
+                    |   ABS
+                    |   NOT
+                    ;
+seq_of_statement    :   statement
+                    |   seq_of_statement statement
+                    ;
+statement           :   unlabeled
+                    |   label statement
+                    ;
+unlabeled           :   simple_statement
+                    |   compound_statement
+                    ;
+simple_statement    :   null_statement
+                    |   assign_statement
+                    |   exit_statement
+                    |   goto_statement
+                    |   procedure_call_statement
+                    |   simple_ret_statement
+                    |   entry_call_statement
+                    |   requeue_statement
+                    |   delay_statement
+                    |   abort_statement
+                    |   raise_statement
+                    |   code_statement
+                    ;
+compound_statement  :   if_statement
+                    |   case_statement
+                    |   loop_statement
+                    |   block_statement
+                    |   extended_ret_statement
+                    |   accept_statement
+                    |   select_statement
+                    ;
+null_statement      :   NuLL ';'
+                    ;
+label               :   LLB IDENTIFIER RLB
+                    ;
+assign_statement    :   name ASSIGNMENT expression ';'
+                    ;
+if_statement        :   IF cond_clause_s else_opt END IF ';'
+                    ;
+cond_clause_s       :   cond_clause
+                    |   ELSIF cond_clause_s
+                    ;
+cond_clause         :   condition THEN seq_of_statement
+                    ;
+condition           :   expression
+                    ;
+else_opt            :   /* Empty */
+                    |   ELSE seq_of_statement
+                    ;
+case_statement      :   CASE expression IS case_statement_alt_s END CASE ';'
+                    ;
+case_statement_alt_s:   case_statement_alt
+                    |   case_statement_alt case_statement_alt_s
+                    ;
+case_statement_alt  :   WHEN discrete_choice_list ARROW seq_of_statement
+                    ;
+loop_statement      :   label_opt iteration_scheme_opt LOOP seq_of_statement END LOOP id_opt ';'
+                    ;
+label_opt           :   /* Empty */
+                    |   IDENTIFIER ':'
+                    ;
+id_opt              :   /* Empty */
+                    |   IDENTIFIER
+                    ;
+iteration_scheme_opt:   /* Empty */
+                    |   iteration_scheme
+                    ;
+iteration_scheme    :   WHILE condition
+                    |   iter_part reverse_opt discreterange
+                    ;
+iter_part           :   FOR IDENTIFIER IN
+                    ;
+reverse_opt         :   /* Empty */
+                    |   REVERSE
+                    ;
+block_statement     :   label_opt decl_opt BegiN seq_of_statement END id_opt ';'
+                    ;
+decl_opt            :   /* Empty */
+                    |   DECLARE decl_part
+                    ;
+exit_statement      :   EXIT name_opt when_opt ';'
+                    ;
+name_opt            :   /* Empty */
+                    |   name
+                    ;
+when_opt            :   /* Empty */
+                    |   WHEN condition
+                    ;
+goto_statement      :   GOTO name ';'
+                    ;
+simple_ret_statement:   RETURN ';'
+                    |   RETURN expression ';'
+                    ; 
 %%
 
 main() {
