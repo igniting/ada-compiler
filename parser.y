@@ -1,4 +1,9 @@
 /**************Parser for ADA*************/
+%{
+#include <stdio.h>
+#include <stdlib.h>
+# include <string.h>
+%}
 
 %token        IDENTIFIER
 %token        NUMBER
@@ -222,6 +227,59 @@ primary				:	NUMBER
 					|	STRING
 					|	'('expression')'
 					;
+name		        :	directname
+		            |	indexed_comp
+		            |	slice	
+		            |	selected_comp
+		            |	attribute_ref
+		            ;
+		
+directname	        :	IDENTIFIER
+		            ;
+		
+prefix		        :	name
+		            |	implicitderef
+		            ;
+		
+explicitderef	    :	name.all
+		            ;
+		
+implicitderef	    :	name
+		            ;
+		
+indexed_comp	    :	prefix'('expression_s')'
+		            ;
+		
+expression_s	    :	expression
+		            |	expression_s ',' expression
+		            ;
+		
+slice		        :	prefix'(' discreterange ')'
+		            ;
+		
+selected_comp	    :	prefix '.' selector_name
+		            ;		
+		
+selector_name	    :	IDENTIFIER
+		            |	CHARACTER
+		            |	OPERATOR
+		            ;
+		            	
+attribute_ref	    :	prefix'''attribute_id
+		            ;
+		
+attribute_id	    :	IDENTIFIER
+		            |	DELTA
+		            |	DIGITS
+		            |	ACCESS
+		            |	MOD
+		            ;
+		            
+literal		        :	NUMBER
+		            |	CHARACTER
+		            |	NuLL
+		            |	STRING
+		            ;
 %%
 
 main() {
