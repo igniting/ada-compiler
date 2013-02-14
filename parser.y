@@ -94,6 +94,67 @@
 %}
 
 %%
+aggregate           :   record_aggregate
+                    |   extension_aggregate
+			        |   array_aggregate
+			        ;
+
+record_aggregate    :   record_component_association_list
+                    ;
+                
+record_component_association_list:record_component_association
+                    |   record_component_association ',' record_component_association
+			        |   NuLL RECORD
+			        ;
+			    
+record_component_association:expression
+                    |   component_choice_list ARROW expression
+                    |   component_choice_list ARROW BOX /* pointing to NULL */
+                    ;
+
+component_choice_list:  component_selector_name
+                    |   component_selector_name '|' component_selector_name
+			        |   OTHERS
+			        ;
+
+extension_aggregate :   ancestor_part WITH record_component_association_list
+                    ;
+
+ancestor_part       :   expression
+                    |   subtype_mark /* Defined in Type Definition (actually NAME)*/
+                    ;
+
+array_aggregate     :   positional_array_aggregate
+                    |   named_array_aggregate
+                    ;
+                		
+positional_array_aggregate:'('expression ',' expression')'
+                    |   '('expression ',' expression ',' expression')'
+                    |   '('expression ',' OTHERS ARROW expression ')'
+                    |   '('expression ',' expression ',' OTHERS ARROW expression ')'
+                    |   '('expression ',' OTHERS ARROW BOX ')'
+                    |   '('expression ',' expression ',' OTHERS ARROW BOX ')'
+                    ;
+			
+named_array_aggregate:  '(' array_component_association ')'
+                    |   '(' array_component_association ',' array_component_association ')'
+                    ;
+			
+array_component_association:discrete_choice_list ARROW expression
+			        |   discrete_choice_list ARROW BOX
+			        ;
+			
+discrete_choice_list:   discrete_choice
+			        |   discrete_choice '|' discrete_choice
+			        ;
+			    
+discrete_choice     :   expression
+                    |   RANGE
+                    |   OTHERS
+                    ;
+                
+subtype_mark        :   name
+                    ;
 expression			:	relation
 					|	relation AND expression
 					|	relation OR expression
