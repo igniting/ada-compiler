@@ -262,10 +262,10 @@ selected_comp	    :	prefix '.' selector_name
 		
 selector_name	    :	IDENTIFIER
 		            |	CHARACTER
-		            |	OPERATOR
+		            |	operator
 		            ;
 		            	
-attribute_ref	    :	prefix'''attribute_id
+attribute_ref	    :	prefix TICK attribute_id
 		            ;
 		
 attribute_id	    :	IDENTIFIER
