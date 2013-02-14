@@ -2,6 +2,7 @@
 /**************Lexical Analyser for ADA*************/
 /*Source:Ada Reference Manual, ISO/IEC 8652:2012(E)*/
 # include "y.tab.h"
+extern YYSTYPE yylval;
 %}
 
 LETTER              [A-Za-z]
@@ -122,9 +123,9 @@ COMMENT             --[^\n]*
 "<<"            return(LLB);
 ">>"            return(RLB);
 "<>"            return(BOX);
-{IDENTIFIER}    return(IDENTIFIER);
-{NUMBER}        return(NUMBER);
-{CHARACTER}     return(CHARACTER);
-{STRING}        return(STRING);
+{IDENTIFIER}    { yylval = strdup(yytext); return(IDENTIFIER);}
+{NUMBER}        { yylval = strdup(yytext); return(NUMBER);}
+{CHARACTER}     { yylval = strdup(yytext); return(CHARACTER);}
+{STRING}        { yylval = strdup(yytext); return(STRING);}
 {COMMENT}       ;
 %%
