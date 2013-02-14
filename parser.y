@@ -101,17 +101,17 @@
 %%
 aggregate           :   record_aggregate
                     |   extension_aggregate
-			        |   array_aggregate
-			        ;
+                    |   array_aggregate
+                    ;
 
 record_aggregate    :   record_component_association_list
                     ;
                 
 record_component_association_list:record_component_association
                     |   record_component_association ',' record_component_association
-			        |   NuLL RECORD
-			        ;
-			    
+                    |   NuLL RECORD
+                    ;
+                            
 record_component_association:expression
                     |   component_choice_list ARROW expression
                     |   component_choice_list ARROW BOX /* pointing to NULL */
@@ -119,8 +119,8 @@ record_component_association:expression
 
 component_choice_list:  component_selector_name
                     |   component_selector_name '|' component_selector_name
-			        |   OTHERS
-			        ;
+                    |   OTHERS
+                    ;
 
 extension_aggregate :   ancestor_part WITH record_component_association_list
                     ;
@@ -132,7 +132,7 @@ ancestor_part       :   expression
 array_aggregate     :   positional_array_aggregate
                     |   named_array_aggregate
                     ;
-                		
+                                
 positional_array_aggregate:'('expression ',' expression')'
                     |   '('expression ',' expression ',' expression')'
                     |   '('expression ',' OTHERS ARROW expression ')'
@@ -140,19 +140,19 @@ positional_array_aggregate:'('expression ',' expression')'
                     |   '('expression ',' OTHERS ARROW BOX ')'
                     |   '('expression ',' expression ',' OTHERS ARROW BOX ')'
                     ;
-			
+                        
 named_array_aggregate:  '(' array_component_association ')'
                     |   '(' array_component_association ',' array_component_association ')'
                     ;
-			
+                        
 array_component_association:discrete_choice_list ARROW expression
-			        |   discrete_choice_list ARROW BOX
-			        ;
-			
+                    |   discrete_choice_list ARROW BOX
+                    ;
+                        
 discrete_choice_list:   discrete_choice
-			        |   discrete_choice '|' discrete_choice
-			        ;
-			    
+                    |   discrete_choice '|' discrete_choice
+                    ;
+                            
 discrete_choice     :   expression
                     |   RANGE
                     |   OTHERS
@@ -161,127 +161,127 @@ discrete_choice     :   expression
 subtype_mark        :   name
                     ;
 
-name		        :	directname
-		            |	indexed_comp
-		            |	slice	
-		            |	selected_comp
-		            |	attribute_ref
-		            ;
-		
-directname	        :	IDENTIFIER
-		            ;
-		
-prefix		        :	name
-		            |	implicitderef
-		            ;
-		
-explicitderef	    :	name '.' ALL
-		            ;
-		
-implicitderef	    :	name
-		            ;
-		
-indexed_comp	    :	prefix'('expression_s')'
-		            ;
-		
-expression_s	    :	expression
-		            |	expression_s ',' expression
-		            ;
-		
-slice		        :	prefix'(' discreterange ')'
-		            ;
-		
-selected_comp	    :	prefix '.' selector_name
-		            ;		
-		
-selector_name	    :	IDENTIFIER
-		            |	CHARACTER
-		            |	operator
-		            ;
-		            	
-attribute_ref	    :	prefix TICK attribute_id
-		            ;
-		
-attribute_id	    :	IDENTIFIER
-		            |	DELTA
-		            |	DIGITS
-		            |	ACCESS
-		            |	MOD
-		            ;
-		            
-literal		        :	NUMBER
-		            |	CHARACTER
-		            |	NuLL
-		            |	STRING
-		            ;
-		            
-expression			:	relation
-					|	expression logical_op relation
-					|	expression short_circuit_op relation
-					;
-choice_expression	:	choice_relation
-					|	choice_relation AND choice_expression
-					|	choice_relation OR choice_expression
-					|	choice_relation XOR choice_expression
-					|	choice_relation AND THEN choice_expression
-					|	choice_relation OR ELSE choice_expression
-					;
-rel_op				:	'='
-					|	INEQUALITY
-					|	'<'
-					|	LE
-					|	'>'
-					|	GE
-					;
-choice_relation		:	simple_expression
-					|	simple_expression rel_op simple_expression
-					;
-relation			:	simple_expression
-					|	simple_expression rel_op simple_expression
-					|	simple_expression membership mem_choice_list
-					;
-membership		    :	IN
-					|	NOT IN
-					;
-mem_choice_list		:	mem_choice
-					|	mem_choice mem_choice_list
-					;
-mem_choice			:	choice_expression
+name                :   directname
+                    |   indexed_comp
+                    |   slice        
+                    |   selected_comp
+                    |   attribute_ref
+                    ;
+                
+directname          :   IDENTIFIER
+                    ;
+                
+prefix              :   name
+                    |   implicitderef
+                    ;
+                
+explicitderef       :   name '.' ALL
+                    ;
+                
+implicitderef       :   name
+                    ;
+                
+indexed_comp        :   prefix'('expression_s')'
+                    ;
+                
+expression_s        :   expression
+                    |   expression_s ',' expression
+                    ;
+                
+slice               :   prefix'(' discreterange ')'
+                    ;
+                
+selected_comp       :   prefix '.' selector_name
+                    ;                
+                
+selector_name       :   IDENTIFIER
+                    |   CHARACTER
+                    |   operator
+                    ;
+                                    
+attribute_ref       :   prefix TICK attribute_id
+                    ;
+                
+attribute_id        :   IDENTIFIER
+                    |   DELTA
+                    |   DIGITS
+                    |   ACCESS
+                    |   MOD
+                    ;
+                            
+literal             :   NUMBER
+                    |   CHARACTER
+                    |   NuLL
+                    |   STRING
+                    ;
+                            
+expression          :   relation
+                    |   expression logical_op relation
+                    |   expression short_circuit_op relation
+                    ;
+choice_expression   :   choice_relation
+                    |   choice_relation AND choice_expression
+                    |   choice_relation OR choice_expression
+                    |   choice_relation XOR choice_expression
+                    |   choice_relation AND THEN choice_expression
+                    |   choice_relation OR ELSE choice_expression
+                    ;
+rel_op              :   '='
+                    |   INEQUALITY
+                    |   '<'
+                    |   LE
+                    |   '>'
+                    |   GE
+                    ;
+choice_relation     :   simple_expression
+                    |   simple_expression rel_op simple_expression
+                    ;
+relation            :   simple_expression
+                    |   simple_expression rel_op simple_expression
+                    |   simple_expression membership mem_choice_list
+                    ;
+membership          :   IN
+                    |   NOT IN
+                    ;
+mem_choice_list     :   mem_choice
+                    |   mem_choice mem_choice_list
+                    ;
+mem_choice          :   choice_expression
                     |   range
-					;
-simple_expression	:   term
+                    ;
+simple_expression   :   term
                     |   unary term
                     |   simple_expression binary_add term 
-					;
-unary   			:   '+'
-					|	'-'
-					;
-binary_add			:	'+'
-					|	'-'
-					|	'&'
-					;
-term				:	factor
-					|	term mul_op factor
-					;
+                    ;
+unary               :   '+'
+                    |   '-'
+                    ;
+binary_add          :   '+'
+                    |   '-'
+                    |   '&'
+                    ;
+term                :   factor
+                    |   term mul_op factor
+                    ;
 range               :   simple_expression DDOT simple_expression
                     |   name TICK RANGE
                     |   name TICK RANGE '(' expression ')'
                     ;
-mul_op				:	'*'
-					|	'/'
-					|	MOD
-					|	REM
-					;
-factor				:	primary
-					|	primary EXPONENTIATE primary
-					|	ABS primary
-					|	NOT primary
-					;
-primary				:	NUMBER
-					|	NuLL
-					|	STRING
-					|	'('expression')'
-					;
+mul_op              :   '*'
+                    |   '/'
+                    |   MOD
+                    |   REM
+                    ;
+factor              :   primary
+                    |   primary EXPONENTIATE primary
+                    |   ABS primary
+                    |   NOT primary
+                    ;
+primary             :   NUMBER
+                    |   NuLL
+                    |   STRING
+                    |   '('expression')'
+                    ;
 logical_op          :   AND
                     |   OR
                     |   XOR
