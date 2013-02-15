@@ -93,7 +93,7 @@
 %token        WITH
 %token        XOR
 
-%start        statement_s
+%start        compilation
 
 %{
 #include <stdio.h>
@@ -104,15 +104,15 @@
 pragma              :   PRAGMA IDENTIFIER ';'
                     |   PRAGMA simple_name '(' pragma_arg_s ')' ';'
                     ;
+                    
 pragma_arg_s        :   pragma_arg
 	                |   pragma_arg_s ',' pragma_arg
 	                ;
-pragma_right        :   expression
-                    |   name
-                    ;
-pragma_arg          :   pragma_right
-	                |   simple_name ARROW pragma_right
+	                
+pragma_arg          :   expression
+	                |   simple_name ARROW expression
 	                ;
+	                
 pragma_s            :   /* Empty */
 	                |   pragma_s pragma
 	                ;
@@ -748,10 +748,6 @@ body_opt            :   /* Empty */
 	                ;
 
 private_type        :   tagged_opt limited_opt PRIVATE
-	                ;
-
-limited_opt         :   /* Empty */
-	                |   LIMITED
 	                ;
 
 use_clause          :   USE name_s ';'
