@@ -3,6 +3,8 @@
 /*Source:Ada Reference Manual, ISO/IEC 8652:2012(E)*/
 # include "y.tab.h"
 extern YYSTYPE yylval;
+extern YYLTYPE yylloc;
+#define YY_USER_INIT yylloc.first_line=1;
 %}
 
 LETTER              [A-Za-z]
@@ -113,6 +115,7 @@ COMMENT             --[^\n]*
 "="             return('=');
 ">"             return('>');
 "|"             return('|');
+"&"             return('&');
 "=>"            return(ARROW);
 ".."            return(DDOT);
 "**"            return(EXPONENTIATE);
@@ -128,4 +131,7 @@ COMMENT             --[^\n]*
 {CHARACTER}     { yylval = strdup(yytext); return(CHARACTER);}
 {STRING}        { yylval = strdup(yytext); return(STRING);}
 {COMMENT}       ;
+[ \t]           ;
+[\n]            yylloc.first_line++;
+.               printf("Invalid token in line %d.\n",yylloc.first_line);
 %%

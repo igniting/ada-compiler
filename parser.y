@@ -93,12 +93,206 @@
 %token        WITH
 %token        XOR
 
+%start        seq_of_statement
+
 %{
 #include <stdio.h>
 #define YYSTYPE char*
 %}
 
 %%
+pragma              :   PRAGMA IDENTIFIER ';'
+                    |   PRAGMA simple_name '(' pragma_arg_s ')' ';'
+                    ;
+pragma_arg_s        :   pragma_arg
+	                |   pragma_arg_s ',' pragma_arg
+	                ;
+pragma_right        :   expression
+                    |   name
+                    ;
+pragma_arg          :   pragma_right
+	                |   simple_name ARROW pragma_right
+	                ;
+pragma_s            :   /* Empty */
+	                |   pragma_s pragma
+	                ;
+	                
+basic_decl          :   type_decl
+                    |   subtype_decl
+                    |   object_decl
+                    |   number_decl
+                    |   subprog_decl
+                    |   abs_subprog_decl
+                    |   null_proc_decl
+                    |   expression_fn_decl
+                    |   package_decl
+                    |   renaming_decl
+                    |   exception_decl
+                    |   generic_decl
+                    |   generic_instantiation
+                    ;
+
+def_identifier      :   IDENTIFIER
+                    ;
+                                                       
+type_decl           :   TYPE def_identifier disc_part_opt IS type_def ';'
+                    ;
+                    
+disc_part_opt       :   /* Empty */
+                    |   disc_part
+                    |   '(' BOX ')'
+                    ;
+                    
+type_def            :   enum_type
+                    |   integer_type
+                    |   real_type
+                    |   array_type
+                    |   record_type
+                    |   access_type
+                    |   derived_type
+                    |   interface_type
+                    ;
+                    
+subtype_decl        :   SUBTYPE def_identifier IS subtype_ind ';'
+                    ;
+                    
+subtype_ind         :   name constraint
+                    |   name
+                    ;
+                    
+constraint          :   range_constraint
+                    |   digits_constraint
+                    ;
+                    
+range_spec          :   RANGE range
+                    ;
+
+range               :   simple_expression DDOT simple_expression
+                    |   name TICK range
+                    |   name TICK range '(' expression ')'
+                    ;
+                    
+digits_constraint   :   DIGITS expression range_spec_opt
+                    ;
+                    
+range_spec_opt    :   /* Empty */
+                    |   range_spec
+                    ;
+                    
+object_decl         :   def_id_list ':' object_spec_opt object_subtype init_opt ';'
+                    ;
+                    
+def_id_list         :   def_identifier
+                    |   def_id_list ',' def_identifier
+                    ;
+                    
+object_spec_opt     :   /* Empty */
+                    |   ALIASED
+                    |   CONSTANT
+                    |   ALIASED CONSTANT
+                    ;
+                    
+object_subtype      :   subtype_ind
+                    |   array_type
+                    ;
+
+init_opt            :   ASSIGNMENT expression
+                    ;
+                    
+number_decl         :   def_id_list ':' CONSTANT ASSIGNMENT expression
+                    ;
+                    
+derived_type        :   derived_specs_opt NEW subtype_ind
+                    |   derived_specs_opt NEW subtype_ind WITH PRIVATE
+                    |   derived_specs_opt NEW subtype_ind WITH record_def
+                    ;
+                    
+derived_specs_opt   :   /* Empty */
+                    |   ABSTRACT
+                    |   LIMITED
+                    |   ABSTRACT LIMITED
+                    ;
+                    
+enum_type           :   '(' enum_lit_s ')'
+                    ;
+                    
+enum_lit_s          :   enum_lit
+                    |   enum_lit_s ',' enum_lit
+                    ;
+                    
+enum_lit            :   def_identifier
+                    |   def_char
+                    ;
+                    
+def_char            :   CHARACTER
+                    ;
+                    
+integer_type        :   range_spec
+                    |   MOD expression
+                    ;
+                    
+real_type           :   float_type
+                    |   fixed_type
+                    ;
+                    
+float_type          :   DIGITS expression range_spec_opt
+                    ;
+                    
+fixed_type          :   DELTA expression range_spec
+                    |   DELTA expression DIGITS expression range_spec_opt
+                    ;
+                    
+array_type          :   unconstr_array_type
+                    |   constr_array_type
+                    ;
+                    
+unconstr_array_type :   ARRAY '(' index_subtype_s ')' OF component_def
+                    ;
+                    
+index_subtype_s     :   index_subtype
+                    |   index_subtype_s ',' index_subtype
+                    ;
+                    
+index_subtype       :   name RANGE BOX
+                    ;
+                    
+constr_array_type   :   ARRAY iter_index_constraint OF component_def
+                    ;
+                    
+component_def       :   aliased_opt subtype_ind
+                    ;
+                    
+aliased_opt         :   /* Empty */
+                    |   ALIASED
+                    ;
+                    
+iter_index_constraint: '(' iter_discrete_range_s ')'
+                    ;
+                    
+iter_discrete_range_s:  discrete_range
+                    |   iter_discrete_range_s ',' discrete_range
+                    ;
+                    
+discrete_range      :   name range_spec_opt
+                    |   range
+                    ;
+                    
+record_type         :   tagged_opt limited_opt record_def
+                    ;
+                    
+record_def          :   RECORD component_list END RECORD
+                    |   NuLL RECORD
+                    ;
+                    
+tagged_opt          :   /* Empty */
+                    |   ABSTRACT TAGGED
+                    |   TAGGED
+                    ;
+                    
+limited_opt         :   /* Empty */
+                    |   LIMITED
+                    ;
+                    
 aggregate           :   record_aggregate
                     |   extension_aggregate
                     |   array_aggregate
@@ -122,6 +316,11 @@ component_choice_list:  component_selector_name
                     |   OTHERS
                     ;
 
+component_selector_name:IDENTIFIER
+                    |   CHARACTER
+                    |   STRING
+                    ;
+                    
 extension_aggregate :   ancestor_part WITH record_component_association_list
                     ;
 
@@ -163,7 +362,9 @@ subtype_mark        :   name
 
 name                :   directname
                     |   indexed_comp
-                    |   slice        
+                    /*
+                    |   slice
+                    */        
                     |   selected_comp
                     |   attribute_ref
                     ;
@@ -187,16 +388,18 @@ indexed_comp        :   prefix'('expression_s')'
 expression_s        :   expression
                     |   expression_s ',' expression
                     ;
-                
+/*                
 slice               :   prefix'(' discreterange ')'
                     ;
-                
+*/                
 selected_comp       :   prefix '.' selector_name
                     ;                
                 
 selector_name       :   IDENTIFIER
                     |   CHARACTER
+                    /*
                     |   operator
+                    */
                     ;
                                     
 attribute_ref       :   prefix TICK attribute_id
@@ -220,11 +423,8 @@ expression          :   relation
                     |   expression short_circuit_op relation
                     ;
 choice_expression   :   choice_relation
-                    |   choice_relation AND choice_expression
-                    |   choice_relation OR choice_expression
-                    |   choice_relation XOR choice_expression
-                    |   choice_relation AND THEN choice_expression
-                    |   choice_relation OR ELSE choice_expression
+                    |   choice_expression logical_op choice_relation
+                    |   choice_expression short_circuit_op choice_relation
                     ;
 rel_op              :   '='
                     |   INEQUALITY
@@ -280,6 +480,7 @@ factor              :   primary
 primary             :   NUMBER
                     |   NuLL
                     |   STRING
+                    |   name
                     |   '('expression')'
                     ;
 logical_op          :   AND
@@ -306,6 +507,7 @@ simple_statement    :   null_statement
                     |   assign_statement
                     |   exit_statement
                     |   goto_statement
+/*
                     |   procedure_call_statement
                     |   simple_ret_statement
                     |   entry_call_statement
@@ -314,14 +516,21 @@ simple_statement    :   null_statement
                     |   abort_statement
                     |   raise_statement
                     |   code_statement
+*/
+                    |   error ';'
+                            {
+                                printf("Syntax error in line %d.\n",@1.first_line);
+                            }
                     ;
 compound_statement  :   if_statement
                     |   case_statement
                     |   loop_statement
                     |   block_statement
+/*
                     |   extended_ret_statement
                     |   accept_statement
                     |   select_statement
+*/
                     ;
 null_statement      :   NuLL ';'
                     ;
@@ -360,7 +569,9 @@ iteration_scheme_opt:   /* Empty */
                     |   iteration_scheme
                     ;
 iteration_scheme    :   WHILE condition
+                    /*
                     |   iter_part reverse_opt discreterange
+                    */
                     ;
 iter_part           :   FOR IDENTIFIER IN
                     ;
@@ -370,7 +581,9 @@ reverse_opt         :   /* Empty */
 block_statement     :   label_opt decl_opt BegiN seq_of_statement END id_opt ';'
                     ;
 decl_opt            :   /* Empty */
+                    /*
                     |   DECLARE decl_part
+                    */
                     ;
 exit_statement      :   EXIT name_opt when_opt ';'
                     ;
@@ -393,5 +606,5 @@ main() {
 }
 
 yyerror(char *s) {
-        fprintf(stderr, "%s\n", s);
+        //fprintf(stderr, "%s\n", s);
 }
