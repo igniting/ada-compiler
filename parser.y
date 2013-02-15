@@ -93,7 +93,7 @@
 %token        WITH
 %token        XOR
 
-%start        seq_of_statement
+%start        statement_s
 
 %{
 #include <stdio.h>
@@ -117,19 +117,18 @@ pragma_s            :   /* Empty */
 	                |   pragma_s pragma
 	                ;
 	                
-basic_decl          :   type_decl
+decl                :   type_decl
                     |   subtype_decl
                     |   object_decl
                     |   number_decl
                     |   subprog_decl
-                    |   abs_subprog_decl
-                    |   null_proc_decl
-                    |   expression_fn_decl
-                    |   package_decl
-                    |   renaming_decl
+                    |   pkg_decl
+                    |   task_decl
+                    |   prot_decl
+                    |   rename_decl
                     |   exception_decl
                     |   generic_decl
-                    |   generic_instantiation
+                    |   body_stub
                     ;
 
 def_identifier      :   IDENTIFIER
@@ -150,7 +149,7 @@ type_def            :   enum_type
                     |   record_type
                     |   access_type
                     |   derived_type
-                    |   interface_type
+                    |   private_type
                     ;
                     
 subtype_decl        :   SUBTYPE def_identifier IS subtype_ind ';'
@@ -164,7 +163,10 @@ constraint          :   range_constraint
                     |   digits_constraint
                     ;
                     
-range_spec          :   RANGE range
+range_constraint    :   RANGE range
+                    ;
+                    
+range_spec          :   range_constraint
                     ;
 
 range               :   simple_expression DDOT simple_expression
@@ -175,7 +177,7 @@ range               :   simple_expression DDOT simple_expression
 digits_constraint   :   DIGITS expression range_spec_opt
                     ;
                     
-range_spec_opt    :   /* Empty */
+range_spec_opt      :   /* Empty */
                     |   range_spec
                     ;
                     
@@ -265,6 +267,8 @@ component_def       :   aliased_opt subtype_ind
 aliased_opt         :   /* Empty */
                     |   ALIASED
                     ;
+component_subtype_def:  aliased_opt subtype_ind
+	                ;
                     
 iter_index_constraint: '(' iter_discrete_range_s ')'
                     ;
@@ -293,130 +297,177 @@ limited_opt         :   /* Empty */
                     |   LIMITED
                     ;
                     
-aggregate           :   record_aggregate
-                    |   extension_aggregate
-                    |   array_aggregate
-                    ;
-
-record_aggregate    :   record_component_association_list
-                    ;
-                
-record_component_association_list:record_component_association
-                    |   record_component_association ',' record_component_association
-                    |   NuLL RECORD
-                    ;
-                            
-record_component_association:expression
-                    |   component_choice_list ARROW expression
-                    |   component_choice_list ARROW BOX /* pointing to NULL */
-                    ;
-
-component_choice_list:  component_selector_name
-                    |   component_selector_name '|' component_selector_name
-                    |   OTHERS
-                    ;
-
-component_selector_name:IDENTIFIER
-                    |   CHARACTER
-                    |   STRING
+component_list      :   component_decl_s variant_part_opt
+                    |   variant_part pragma_s
+                    |   NuLL ';' pragma_s
                     ;
                     
-extension_aggregate :   ancestor_part WITH record_component_association_list
+component_decl_s    :   component_decl
+                    |   component_decl_s pragma_s component_decl
+                    ;
+                    
+variant_part_opt    :   pragma_s
+	                |   pragma_s variant_part pragma_s
+	                ;
+
+component_decl      :   def_id_list ':' component_subtype_def init_opt ';'
+	                ;
+
+disc_part        : '(' discrim_spec_s ')'
+	                ;
+
+discrim_spec_s      :   discrim_spec
+	                |   discrim_spec_s ';' discrim_spec
+	                ;
+
+discrim_spec        :   def_id_list ':' access_opt mark init_opt
+	                |   error
+	                ;
+
+access_opt          :   /* Empty */
+	                |   ACCESS
+	                ;
+
+variant_part        :   CASE simple_name IS pragma_s variant_s END CASE ';'
+	                ;
+
+variant_s           :   variant
+	                |   variant_s variant
+	                ;
+
+variant             :   WHEN choice_s RLB pragma_s component_list
+	                ;
+
+choice_s            :   choice
+	                |   choice_s '|' choice
+	                ;
+
+choice              :   expression
+	                |   discrete_with_range
+	                |   OTHERS
+	                ;
+
+discrete_with_range :   name range_constraint
+	                |   range
                     ;
 
-ancestor_part       :   expression
-                    |   subtype_mark /* Defined in Type Definition (actually NAME)*/
-                    ;
+access_type         :   ACCESS subtype_ind
+	                |   ACCESS CONSTANT subtype_ind
+	                |   ACCESS ALL subtype_ind
+	                |   ACCESS prot_opt PROCEDURE formal_part_opt
+	                |   ACCESS prot_opt FUNCTION formal_part_opt RETURN mark
+	                ;
 
-array_aggregate     :   positional_array_aggregate
-                    |   named_array_aggregate
-                    ;
-                                
-positional_array_aggregate:'('expression ',' expression')'
-                    |   '('expression ',' expression ',' expression')'
-                    |   '('expression ',' OTHERS ARROW expression ')'
-                    |   '('expression ',' expression ',' OTHERS ARROW expression ')'
-                    |   '('expression ',' OTHERS ARROW BOX ')'
-                    |   '('expression ',' expression ',' OTHERS ARROW BOX ')'
-                    ;
-                        
-named_array_aggregate:  '(' array_component_association ')'
-                    |   '(' array_component_association ',' array_component_association ')'
-                    ;
-                        
-array_component_association:discrete_choice_list ARROW expression
-                    |   discrete_choice_list ARROW BOX
-                    ;
-                        
-discrete_choice_list:   discrete_choice
-                    |   discrete_choice '|' discrete_choice
-                    ;
-                            
-discrete_choice     :   expression
-                    |   RANGE
-                    |   OTHERS
-                    ;
-                
-subtype_mark        :   name
-                    ;
+prot_opt            :   /* Empty */
+	                |   PROTECTED
+	                ;
 
-name                :   directname
-                    |   indexed_comp
-                    /*
-                    |   slice
-                    */        
-                    |   selected_comp
-                    |   attribute_ref
-                    ;
-                
-directname          :   IDENTIFIER
-                    ;
-                
-prefix              :   name
-                    |   implicitderef
-                    ;
-                
-explicitderef       :   name '.' ALL
-                    ;
-                
-implicitderef       :   name
-                    ;
-                
-indexed_comp        :   prefix'('expression_s')'
-                    ;
-                
-expression_s        :   expression
-                    |   expression_s ',' expression
-                    ;
-/*                
-slice               :   prefix'(' discreterange ')'
-                    ;
-*/                
-selected_comp       :   prefix '.' selector_name
-                    ;                
-                
-selector_name       :   IDENTIFIER
-                    |   CHARACTER
-                    /*
-                    |   operator
-                    */
-                    ;
-                                    
-attribute_ref       :   prefix TICK attribute_id
-                    ;
-                
+decl_part           :   /* Empty */
+	                |   decl_item_or_body_s1
+	                ;
+
+decl_item_s         :   /* Empty */
+	                |   decl_item_s1
+	                ;
+
+decl_item_s1        :   decl_item
+	                |   decl_item_s1 decl_item
+	                ;
+
+decl_item           :   decl
+	                |   use_clause
+	                |   rep_spec
+	                |   pragma
+	                ;
+
+decl_item_or_body_s1:   decl_item_or_body
+	                |   decl_item_or_body_s1 decl_item_or_body
+	                ;
+
+decl_item_or_body   :   body
+	                |   decl_item
+	                ;
+
+body                :   subprog_body
+	                |   pkg_body
+	                |   task_body
+	                |   prot_body
+	                ;
+	                
+name                :   simple_name
+	                |   indexed_comp
+	                |   selected_comp
+	                |   attribute
+	                |   operator_symbol
+	                ;
+
+mark                :   simple_name
+	                |   mark TICK attribute_id
+	                |   mark '.' simple_name
+	                ;
+
+simple_name         :   IDENTIFIER
+	                ;
+
+compound_name       :   simple_name
+	                |   compound_name '.' simple_name
+	                ;
+
+c_name_list         :   compound_name
+	                |   c_name_list ',' compound_name
+	                ;
+
+used_char           :   CHARACTER
+	                ;
+
+operator_symbol     :   STRING
+	                ;
+
+indexed_comp        :   name '(' value_s ')'
+	                ;
+
+value_s             :   value
+	                |   value_s ',' value
+	                ;
+
+value               :   expression
+	                |   comp_assoc
+	                |   discrete_with_range
+	                ;
+
+selected_comp       :   name '.' simple_name
+	                |   name '.' used_char
+	                |   name '.' operator_symbol
+	                |   name '.' ALL
+	                ;
+
+attribute           :   name TICK attribute_id
+	                ;
+
 attribute_id        :   IDENTIFIER
-                    |   DELTA
-                    |   DIGITS
-                    |   ACCESS
-                    |   MOD
-                    ;
-                            
+	                |   DIGITS
+	                |   DELTA
+	                |   ACCESS
+	                ;
+
 literal             :   NUMBER
-                    |   CHARACTER
-                    |   NuLL
-                    |   STRING
-                    ;
+	                |   used_char
+	                |   NuLL
+	                ;
+
+aggregate           :   '(' comp_assoc ')'
+	                |   '(' value_s_2 ')'
+	                |   '(' expression WITH value_s ')'
+                    |   '(' expression WITH NuLL RECORD ')'
+                    |   '(' NuLL RECORD ')'
+	                ;
+
+value_s_2           :   value ',' value
+	                |   value_s_2 ',' value
+	                ;
+
+comp_assoc          :   choice_s ARROW expression
+	                ;
                             
 expression          :   relation
                     |   expression logical_op relation
@@ -463,9 +514,6 @@ binary_add          :   '+'
 term                :   factor
                     |   term mul_op factor
                     ;
-range               :   simple_expression DDOT simple_expression
-                    |   name TICK RANGE
-                    |   name TICK RANGE '(' expression ')'
                     ;
 mul_op              :   '*'
                     |   '/'
@@ -477,127 +525,550 @@ factor              :   primary
                     |   ABS primary
                     |   NOT primary
                     ;
-primary             :   NUMBER
-                    |   NuLL
-                    |   STRING
-                    |   name
-                    |   '('expression')'
-                    ;
+
+primary             :   literal
+	                |   name
+	                |   allocator
+	                |   qualified
+	                |   parenthesized_primary
+	                ;
+
+parenthesized_primary:  aggregate
+	                |   '(' expression ')'
+	                ;
+
+qualified           :   name TICK parenthesized_primary
+	                ;
+
+allocator           :   NEW name
+	                |   NEW qualified
+	                ;
+	                
 logical_op          :   AND
                     |   OR
                     |   XOR
                     ;
+                    
 short_circuit_op    :   AND THEN
                     |   OR ELSE
                     ;
-highest_prec_op     :   EXPONENTIATE
-                    |   ABS
-                    |   NOT
+                    
+statement_s         :   statement
+                    |   statement_s statement
                     ;
-seq_of_statement    :   statement
-                    |   seq_of_statement statement
-                    ;
+                    
 statement           :   unlabeled
                     |   label statement
                     ;
+                    
 unlabeled           :   simple_statement
                     |   compound_statement
                     ;
+                    
 simple_statement    :   null_statement
                     |   assign_statement
                     |   exit_statement
                     |   goto_statement
-/*
                     |   procedure_call_statement
-                    |   simple_ret_statement
-                    |   entry_call_statement
                     |   requeue_statement
                     |   delay_statement
                     |   abort_statement
                     |   raise_statement
                     |   code_statement
-*/
                     |   error ';'
                             {
                                 printf("Syntax error in line %d.\n",@1.first_line);
                             }
                     ;
+                    
 compound_statement  :   if_statement
                     |   case_statement
                     |   loop_statement
                     |   block_statement
-/*
-                    |   extended_ret_statement
                     |   accept_statement
                     |   select_statement
-*/
                     ;
+                    
 null_statement      :   NuLL ';'
                     ;
+                    
 label               :   LLB IDENTIFIER RLB
                     ;
+                    
 assign_statement    :   name ASSIGNMENT expression ';'
                     ;
+                    
 if_statement        :   IF cond_clause_s else_opt END IF ';'
                     ;
+                    
 cond_clause_s       :   cond_clause
                     |   ELSIF cond_clause_s
                     ;
-cond_clause         :   condition THEN seq_of_statement
+                    
+cond_clause         :   condition THEN statement_s
                     ;
+                    
 condition           :   expression
                     ;
+                    
 else_opt            :   /* Empty */
-                    |   ELSE seq_of_statement
+                    |   ELSE statement_s
                     ;
-case_statement      :   CASE expression IS case_statement_alt_s END CASE ';'
+                    
+case_statement      :   CASE expression IS pragma_s case_statement_alt_s END CASE ';'
                     ;
+                    
 case_statement_alt_s:   case_statement_alt
-                    |   case_statement_alt case_statement_alt_s
+                    |   case_statement_alt_s case_statement_alt
                     ;
-case_statement_alt  :   WHEN discrete_choice_list ARROW seq_of_statement
+                    
+case_statement_alt  :   WHEN choice_s ARROW statement_s
                     ;
-loop_statement      :   label_opt iteration_scheme_opt LOOP seq_of_statement END LOOP id_opt ';'
+                    
+loop_statement      :   label_opt iteration_scheme_opt LOOP statement_s END LOOP id_opt ';'
                     ;
+                    
 label_opt           :   /* Empty */
                     |   IDENTIFIER ':'
                     ;
+                    
 id_opt              :   /* Empty */
                     |   IDENTIFIER
                     ;
+                    
 iteration_scheme_opt:   /* Empty */
                     |   iteration_scheme
                     ;
+                    
 iteration_scheme    :   WHILE condition
-                    /*
-                    |   iter_part reverse_opt discreterange
-                    */
+                    |   iter_part reverse_opt discrete_range
                     ;
 iter_part           :   FOR IDENTIFIER IN
                     ;
+                    
 reverse_opt         :   /* Empty */
                     |   REVERSE
                     ;
-block_statement     :   label_opt decl_opt BegiN seq_of_statement END id_opt ';'
+                    
+block_statement     :   label_opt decl_opt BegiN statement_s END id_opt ';'
                     ;
+                    
 decl_opt            :   /* Empty */
-                    /*
                     |   DECLARE decl_part
-                    */
                     ;
+                    
+block_body          :   BegiN handled_stmt_s
+	                ;
+	                
+handled_stmt_s      :   statement_s except_handler_part_opt 
+	                ;
+	                 
+except_handler_part_opt:/*Empty*/
+	                |   except_handler_part
+	                ;
+	                
 exit_statement      :   EXIT name_opt when_opt ';'
                     ;
+                    
 name_opt            :   /* Empty */
                     |   name
                     ;
+                    
 when_opt            :   /* Empty */
                     |   WHEN condition
                     ;
+                    
 goto_statement      :   GOTO name ';'
                     ;
-simple_ret_statement:   RETURN ';'
-                    |   RETURN expression ';'
-                    ; 
+                    
+subprog_decl        :   subprog_spec ';'
+	                |   generic_subp_inst ';'
+	                |   subprog_spec_is_push ABSTRACT ';'
+	                ;
+
+subprog_spec        :   PROCEDURE compound_name formal_part_opt
+	                |   FUNCTION designator formal_part_opt RETURN name
+	                |   FUNCTION designator
+	                ;
+
+designator          :   compound_name
+	                |   STRING
+	                ;
+
+formal_part_opt     :   /* Empty */
+	                |   formal_part
+	                ;
+
+formal_part         :   '(' param_s ')'
+	                ;
+
+param_s             :   param
+	                |   param_s ';' param
+	                ;
+
+param               :   def_id_list ':' mode mark init_opt
+	                ;
+
+mode                :   /* Empty */
+	                |   IN
+	                |   OUT
+	                |   IN OUT
+	                |   ACCESS
+	                ;
+
+subprog_spec_is_push:   subprog_spec IS
+	                ;
+
+subprog_body        :   subprog_spec_is_push decl_part block_body END id_opt ';'
+	                ;
+
+procedure_call_statement:   name ';'
+	                ;
+
+pkg_decl            :   pkg_spec ';'
+	                |   generic_pkg_inst ';'
+	                ;
+
+pkg_spec            :   PACKAGE compound_name IS decl_item_s private_part END c_id_opt
+	                ;
+
+private_part        :   /* Empty */
+	                |   PRIVATE decl_item_s
+	                ;
+
+c_id_opt            :   /* Empty */
+	                |   compound_name
+	                ;
+
+pkg_body            :   PACKAGE BODY compound_name IS decl_part body_opt END c_id_opt ';'
+	                ;
+
+body_opt            :   /* Empty */
+	                |   block_body
+	                ;
+
+private_type        :   tagged_opt limited_opt PRIVATE
+	                ;
+
+limited_opt         :   /* Empty */
+	                |   LIMITED
+	                ;
+
+use_clause          :   USE name_s ';'
+	                |   USE TYPE name_s ';'
+	                ;
+
+name_s              :   name
+	                |   name_s ',' name
+	                ;
+
+rename_decl         :   def_id_list ':' object_spec_opt subtype_ind renames ';'
+	                |   def_id_list ':' EXCEPTION renames ';'
+	                |   rename_unit
+	                ;
+
+rename_unit         :   PACKAGE compound_name renames ';'
+	                |   subprog_spec renames ';'
+	                |   generic_formal_part PACKAGE compound_name renames ';'
+	                |   generic_formal_part subprog_spec renames ';'
+	                ;
+
+renames             :   RENAMES name
+	                ;
+
+task_decl           :   task_spec ';'
+	                ;
+
+task_spec           :   TASK simple_name task_def
+	                |   TASK TYPE simple_name disc_part_opt task_def
+	                ;
+
+task_def            :   /* Empty */
+	                |   IS entry_decl_s rep_spec_s task_private_opt END id_opt
+	                ;
+
+task_private_opt    :   /* Empty */
+	                |   PRIVATE entry_decl_s rep_spec_s
+	                ;
+
+task_body           :   TASK BODY simple_name IS decl_part block_body END id_opt ';'
+	                ;
+
+prot_decl           :   prot_spec ';'
+	                ;
+
+prot_spec           :   PROTECTED IDENTIFIER prot_def
+	                |   PROTECTED TYPE simple_name disc_part_opt prot_def
+	                ;
+
+prot_def            :   IS prot_op_decl_s prot_private_opt END id_opt
+	                ;
+
+prot_private_opt    :   /* Empty */
+	                |   PRIVATE prot_elem_decl_s 
+                    ;
+
+prot_op_decl_s      :   /* Empty */
+	                |   prot_op_decl_s prot_op_decl
+	                ;
+
+prot_op_decl        :   entry_decl
+	                |   subprog_spec ';'
+	                |   rep_spec
+	                |   pragma
+	                ;
+
+prot_elem_decl_s    :   /* Empty */
+	                |   prot_elem_decl_s prot_elem_decl
+	                ;
+
+prot_elem_decl      :   prot_op_decl
+                    |   component_decl ;
+
+prot_body           :   PROTECTED BODY simple_name IS prot_op_body_s END id_opt ';'
+	                ;
+
+prot_op_body_s      :   pragma_s
+	                |   prot_op_body_s prot_op_body pragma_s
+	                ;
+
+prot_op_body        :   entry_body
+	                |   subprog_body
+	                |   subprog_spec ';'
+	                ;
+
+entry_decl_s        :   pragma_s
+	                |   entry_decl_s entry_decl pragma_s
+	                ;
+
+entry_decl          :   ENTRY IDENTIFIER formal_part_opt ';'
+	                |   ENTRY IDENTIFIER '(' discrete_range ')' formal_part_opt ';'
+	                ;
+
+entry_body          :   ENTRY IDENTIFIER formal_part_opt WHEN condition entry_body_part
+	                |   ENTRY IDENTIFIER '(' iter_part discrete_range ')' formal_part_opt WHEN condition entry_body_part
+	                ;
+
+entry_body_part     :   ';'
+	                |   IS decl_part block_body END id_opt ';'
+	                ;
+
+rep_spec_s          :   /* Empty */
+	                |   rep_spec_s rep_spec pragma_s
+	                ;
+
+entry_call          :   procedure_call_statement
+	                ;
+
+accept_statement    :   accept_hdr ';'
+	                |   accept_hdr DO handled_stmt_s END id_opt ';'
+	                ;
+
+accept_hdr          :   ACCEPT entry_name formal_part_opt
+	                ;
+
+entry_name          :   simple_name
+	                |   entry_name '(' expression ')'
+	                ;
+
+delay_statement     :   DELAY expression ';'
+	                |   DELAY UNTIL expression ';'
+	                ;
+
+select_statement    :   select_wait
+	                |   async_select
+	                |   timed_entry_call
+	                |   cond_entry_call
+	                ;
+
+select_wait         :   SELECT guarded_select_alt or_select else_opt END SELECT ';'
+	                ;
+
+guarded_select_alt  :   select_alt
+	                |   WHEN condition ARROW select_alt
+	                ;
+
+or_select           :   /* Empty */
+	                |   or_select OR guarded_select_alt
+	                ;
+
+select_alt          :   accept_statement stmts_opt
+	                |   delay_statement stmts_opt
+	                |   TERMINATE ';'
+	                ;
+
+delay_or_entry_alt  :   delay_statement stmts_opt
+	                |   entry_call stmts_opt
+                    ;
+                    
+async_select        :   SELECT delay_or_entry_alt THEN ABORT statement_s END SELECT ';'
+	                ;
+
+timed_entry_call    :   SELECT entry_call stmts_opt OR delay_statement stmts_opt END SELECT ';'
+	                ;
+
+cond_entry_call     :   SELECT entry_call stmts_opt ELSE statement_s END SELECT ';'
+	                ;
+
+stmts_opt           :   /* Empty */
+	                |   statement_s
+	                ;
+
+abort_statement     :   ABORT name_s ';'
+	                ;
+
+compilation         :   /* Empty */
+	                |   compilation comp_unit
+	                |   pragma pragma_s
+	                ;
+
+comp_unit           :   context_spec private_opt unit pragma_s
+	                |   private_opt unit pragma_s
+	                ;
+
+private_opt         :   /* Empty */
+	                |   PRIVATE
+	                ;
+
+context_spec        :   with_clause use_clause_opt
+	                |   context_spec with_clause use_clause_opt
+	                |   context_spec pragma
+	                ;
+
+with_clause         :   WITH c_name_list ';'
+	                ;
+
+use_clause_opt      :   /* Empty */
+	                |   use_clause_opt use_clause
+	                ;
+
+unit                :   pkg_decl
+	                |   pkg_body
+	                |   subprog_decl
+	                |   subprog_body
+	                |   subunit
+	                |   generic_decl
+	                |   rename_unit
+                    ;
+
+subunit             :   SEPARATE '(' compound_name ')' subunit_body
+	                ;
+
+subunit_body        :   subprog_body
+	                |   pkg_body
+	                |   task_body
+	                |   prot_body
+	                ;
+
+body_stub           :   TASK BODY simple_name IS SEPARATE ';'
+	                |   PACKAGE BODY compound_name IS SEPARATE ';'
+	                |   subprog_spec IS SEPARATE ';'
+	                |   PROTECTED BODY simple_name IS SEPARATE ';'
+	                ;
+
+exception_decl      :   def_id_list ':' EXCEPTION ';'
+	                ;
+
+except_handler_part :   EXCEPTION exception_handler
+	                |   except_handler_part exception_handler
+	                ;
+
+exception_handler   :   WHEN except_choice_s ARROW statement_s
+	                |   WHEN IDENTIFIER ':' except_choice_s ARROW statement_s
+	                ;
+
+except_choice_s     :   except_choice
+	                |   except_choice_s '|' except_choice
+	                ;
+
+except_choice       :   name
+	                |   OTHERS
+	                ;
+
+raise_statement     :   RAISE name_opt ';'
+	                ;
+
+requeue_statement   :   REQUEUE name ';'
+	                |   REQUEUE name WITH ABORT ';'
+	                ;
+
+generic_decl        :   generic_formal_part subprog_spec ';'
+	                |   generic_formal_part pkg_spec ';'
+	                ;
+
+generic_formal_part :   GENERIC
+	                |   generic_formal_part generic_formal
+	                ;
+
+generic_formal      :   param ';'
+	                |   TYPE simple_name generic_discrim_part_opt IS generic_type_def ';'
+	                |   WITH PROCEDURE simple_name formal_part_opt subp_default ';'
+	                |   WITH FUNCTION designator formal_part_opt RETURN name subp_default ';'
+	                |   WITH PACKAGE simple_name IS NEW name '(' BOX ')' ';'
+	                |   WITH PACKAGE simple_name IS NEW name ';'
+	                |   use_clause
+	                ;
+
+generic_discrim_part_opt :/* Empty */
+	                |   disc_part
+	                | '(' BOX ')'
+	                ;
+
+subp_default        :   /* Empty */
+	                |   IS name
+	                |   IS BOX
+	                ;
+
+generic_type_def    :   '(' BOX ')'
+	                |   RANGE BOX
+	                |   MOD BOX
+	                |   DELTA BOX
+	                |   DELTA BOX DIGITS BOX
+	                |   DIGITS BOX
+	                |   array_type
+	                |   access_type
+	                |   private_type
+	                |   generic_derived_type
+	                ;
+
+generic_derived_type:   NEW subtype_ind
+	                |   NEW subtype_ind WITH PRIVATE
+	                |   ABSTRACT NEW subtype_ind WITH PRIVATE
+	                ;
+
+generic_subp_inst   :   subprog_spec IS generic_inst
+	                ;
+
+generic_pkg_inst    :   PACKAGE compound_name IS generic_inst
+	                ;
+
+generic_inst        :   NEW name
+	                ;
+
+rep_spec            :   attrib_def
+	                |   record_type_spec
+	                |   address_spec
+	                ;
+
+attrib_def          :   FOR mark USE expression ';'
+	                ;
+
+record_type_spec    :   FOR mark USE RECORD align_opt comp_loc_s END RECORD ';'
+	                ;
+
+align_opt           :   /* Empty */
+	                |   AT MOD expression ';'
+	                ;
+
+comp_loc_s          :   /* Empty */
+	                |   comp_loc_s mark AT expression RANGE range ';'
+	                ;
+
+address_spec        :   FOR mark USE AT expression ';'
+	                ;
+
+code_statement      :   qualified ';'
+                    ;
 %%
 
 main() {
