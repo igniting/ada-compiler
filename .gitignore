@@ -1,4 +1,9 @@
 .*
 *~
+lex.yy.c
+lex
+y.tab.c
+y.tab.h
+y.output
 # except for .gitignore
 !.gitignore

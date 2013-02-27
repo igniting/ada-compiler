@@ -97,11 +97,13 @@
 
 %{
 #include <stdio.h>
+#include "symtable.h"
 #define YYSTYPE char*
 %}
 
 %%
 pragma              :   PRAGMA IDENTIFIER ';'
+                            {symlook($2);}
                     |   PRAGMA simple_name '(' pragma_arg_s ')' ';'
                     ;
                     
@@ -129,9 +131,14 @@ decl                :   type_decl
                     |   exception_decl
                     |   generic_decl
                     |   body_stub
+                    |   error ';'
+                            {
+                                fprintf(stderr,"Syntax error in line %d.\n",@1.first_line);
+                            }                                        
                     ;
 
 def_identifier      :   IDENTIFIER
+                            {if(symlook($1)==1) fprintf(stderr,"%s declared again.\n",$1);}
                     ;
                                                        
 type_decl           :   TYPE def_identifier disc_part_opt IS type_def ';'
@@ -198,7 +205,8 @@ object_subtype      :   subtype_ind
                     |   array_type
                     ;
 
-init_opt            :   ASSIGNMENT expression
+init_opt            :   /* Empty */
+                    |   ASSIGNMENT expression
                     ;
                     
 number_decl         :   def_id_list ':' CONSTANT ASSIGNMENT expression
@@ -311,9 +319,10 @@ variant_part_opt    :   pragma_s
 	                ;
 
 component_decl      :   def_id_list ':' component_subtype_def init_opt ';'
+                    |   error ';'                   
 	                ;
 
-disc_part        : '(' discrim_spec_s ')'
+disc_part           : '(' discrim_spec_s ')'
 	                ;
 
 discrim_spec_s      :   discrim_spec
@@ -321,7 +330,7 @@ discrim_spec_s      :   discrim_spec
 	                ;
 
 discrim_spec        :   def_id_list ':' access_opt mark init_opt
-	                |   error
+	                |   error	                
 	                ;
 
 access_opt          :   /* Empty */
@@ -433,6 +442,7 @@ value_s             :   value
 value               :   expression
 	                |   comp_assoc
 	                |   discrete_with_range
+	                |   error                
 	                ;
 
 selected_comp       :   name '.' simple_name
@@ -577,7 +587,7 @@ simple_statement    :   null_statement
                     |   code_statement
                     |   error ';'
                             {
-                                printf("Syntax error in line %d.\n",@1.first_line);
+                                fprintf(stderr,"Syntax error in line %d.\n",@1.first_line);
                             }
                     ;
                     
@@ -707,6 +717,7 @@ param_s             :   param
 	                ;
 
 param               :   def_id_list ':' mode mark init_opt
+                    |   error                   
 	                ;
 
 mode                :   /* Empty */
