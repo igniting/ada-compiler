@@ -76,7 +76,6 @@ COMMENT             --[^\n]*
 (?i:GOTO)       { adjust(); return(GOTO);}
 (?i:IF)         { adjust(); return(IF);}
 (?i:IN)         { adjust(); return(IN);}
-(?i:INTERFACE)  { adjust(); return(INTERFACE);}
 (?i:IS)         { adjust(); return(IS);}
 (?i:LIMITED)    { adjust(); return(LIMITED);}
 (?i:LOOP)       { adjust(); return(LOOP);}
@@ -88,7 +87,6 @@ COMMENT             --[^\n]*
 (?i:OR)         { adjust(); return(OR);}
 (?i:OTHERS)     { adjust(); return(OTHERS);}
 (?i:OUT)        { adjust(); return(OUT);}
-(?i:OVERRIDING) { adjust(); return(OVERRIDING);}
 (?i:PACKAGE)    { adjust(); return(PACKAGE);}
 (?i:PRAGMA)     { adjust(); return(PRAGMA);}
 (?i:PRIVATE)    { adjust(); return(PRIVATE);}
@@ -105,7 +103,6 @@ COMMENT             --[^\n]*
 (?i:SELECT)     { adjust(); return(SELECT);}
 (?i:SEPARATE)   { adjust(); return(SEPARATE);}
 (?i:SUBTYPE)    { adjust(); return(SUBTYPE);}
-(?i:SYNCHRONIZED) { adjust(); return(SYNCHRONIZED);}
 (?i:TAGGED)     { adjust(); return(TAGGED);}
 (?i:TASK)       { adjust(); return(TASK);}
 (?i:TERMINATE)  { adjust(); return(TERMINATE);}
@@ -133,15 +130,15 @@ COMMENT             --[^\n]*
 ">"             { adjust(); return('>');}
 "|"             { adjust(); return('|');}
 "&"             { adjust(); return('&');}
-"=>"            { adjust(); return(ARROW);}
-".."            { adjust(); return(DDOT);}
-"**"            { adjust(); return(EXPONENTIATE);}
-":="            { adjust(); return(ASSIGNMENT);}
-"/="            { adjust(); return(INEQUALITY);}
+"=>"            { adjust(); return(RIGHT_SHAFT);}
+".."            { adjust(); return(DOT_DOT);}
+"**"            { adjust(); return(EXPON);}
+":="            { adjust(); return(IS_ASSIGNED);}
+"/="            { adjust(); return(NE);}
 ">="            { adjust(); return(GE);}
-"<="            { adjust(); return(LE);}
-"<<"            { adjust(); return(LLB);}
-">>"            { adjust(); return(RLB);}
+"<="            { adjust(); return(LT_EQ);}
+"<<"            { adjust(); return(LT_LT);}
+">>"            { adjust(); return(GT_GT);}
 "<>"            { adjust(); return(BOX);}
 {IDENTIFIER}    { adjust(); yylval = strdup(yytext); return(IDENTIFIER);}
 {NUMBER}        { adjust(); yylval = strdup(yytext); return(NUMBER);}

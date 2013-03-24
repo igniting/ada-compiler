@@ -17,7 +17,7 @@ lex.yy.o: lex.yy.c y.tab.h errormsg.h util.h
 	cc -g -c lex.yy.c
 
 lex.yy.c: lexer.l
-	lex tiger.lex
+	lex lexer.l
 
 util.o: util.c util.h
 	cc -g -c util.c
