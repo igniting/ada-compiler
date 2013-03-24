@@ -103,7 +103,6 @@
 
 %%
 pragma              :   PRAGMA IDENTIFIER ';'
-                            {symlook($2);}
                     |   PRAGMA simple_name '(' pragma_arg_s ')' ';'
                     ;
                     
@@ -319,7 +318,7 @@ variant_part_opt    :   pragma_s
 	                ;
 
 component_decl      :   def_id_list ':' component_subtype_def init_opt ';'
-                    |   error ';'                   
+                    |   error ';'                  
 	                ;
 
 disc_part           : '(' discrim_spec_s ')'

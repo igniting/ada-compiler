@@ -10,6 +10,7 @@ with Text_IO;
 with Gnat.Io; use Gnat.Io;
 procedure Calc is
    Op: Character;               -- Operation to perform.
+   Op: Character;
    Disp: Integer := 0;          -- Contents of the display.
    In_Val: Integer;             -- Input value used to update the display.
 begin
