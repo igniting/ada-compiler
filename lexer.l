@@ -6,6 +6,8 @@
 #include "util.h"
 #include "errormsg.h"
 
+extern YYSTYPE yylval;
+
 int charPos=1;
 
 int yywrap(void)
@@ -103,7 +105,7 @@ COMMENT             --[^\n]*
 (?i:SELECT)     { adjust(); return(SELECT);}
 (?i:SEPARATE)   { adjust(); return(SEPARATE);}
 (?i:SUBTYPE)    { adjust(); return(SUBTYPE);}
-(?i:SYNCHRONIZED){ adjust(); return(SYNCHRONIZED);}
+(?i:SYNCHRONIZED) { adjust(); return(SYNCHRONIZED);}
 (?i:TAGGED)     { adjust(); return(TAGGED);}
 (?i:TASK)       { adjust(); return(TASK);}
 (?i:TERMINATE)  { adjust(); return(TERMINATE);}
@@ -141,12 +143,12 @@ COMMENT             --[^\n]*
 "<<"            { adjust(); return(LLB);}
 ">>"            { adjust(); return(RLB);}
 "<>"            { adjust(); return(BOX);}
-{IDENTIFIER}    { yylval = strdup(yytext); return(IDENTIFIER);}
-{NUMBER}        { yylval = strdup(yytext); return(NUMBER);}
-{CHARACTER}     { yylval = strdup(yytext); return(CHARACTER);}
-{STRING}        { yylval = strdup(yytext); return(STRING);}
-{COMMENT}       ;
-[ \t]           ;
-[\n]            yylloc.first_line++;
-.               printf("Invalid token in line %d.\n",yylloc.first_line);
+{IDENTIFIER}    { adjust(); yylval = strdup(yytext); return(IDENTIFIER);}
+{NUMBER}        { adjust(); yylval = strdup(yytext); return(NUMBER);}
+{CHARACTER}     { adjust(); yylval = strdup(yytext); return(CHARACTER);}
+{STRING}        { adjust(); yylval = strdup(yytext); return(STRING);}
+{COMMENT}       { adjust(); continue;}
+[ \t]           { adjust(); continue;}
+[\n]            { EM_newline(); continue;}
+.               { adjust(); EM_error(EM_tokPos,"Illegal token");}
 %%
