@@ -140,10 +140,10 @@ COMMENT             --[^\n]*
 "<<"            { adjust(); return(LT_LT);}
 ">>"            { adjust(); return(GT_GT);}
 "<>"            { adjust(); return(BOX);}
-{IDENTIFIER}    { adjust(); yylval = strdup(yytext); return(IDENTIFIER);}
-{NUMBER}        { adjust(); yylval = strdup(yytext); return(NUMBER);}
-{CHARACTER}     { adjust(); yylval = strdup(yytext); return(CHARACTER);}
-{STRING}        { adjust(); yylval = strdup(yytext); return(STRING);}
+{IDENTIFIER}    { adjust(); yylval = String(yytext); return(IDENTIFIER);}
+{NUMBER}        { adjust(); yylval = String(yytext); return(NUMBER);}
+{CHARACTER}     { adjust(); yylval = String(yytext); return(CHARACTER);}
+{STRING}        { adjust(); yylval = String(yytext); return(STRING);}
 {COMMENT}       { adjust(); continue;}
 [ \t]           { adjust(); continue;}
 [\n]            { EM_newline(); continue;}

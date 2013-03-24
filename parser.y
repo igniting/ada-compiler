@@ -4,6 +4,8 @@
 #include "util.h"
 #include "errormsg.h"
 
+#define YYSTYPE char*
+
 int yylex(void); /* function prototype */
 
 void yyerror(char *s)
@@ -98,9 +100,6 @@ void yyerror(char *s)
 %token XOR
 
 %{
-#include <stdio.h>
-#include "symtable.h"
-#define YYSTYPE char*
 %}
 
 %%
