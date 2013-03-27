@@ -26,7 +26,9 @@ typedef struct A_efield_ *A_efield;
 typedef struct A_efieldList_ *A_efieldList;
 
 typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp,
-	     A_eqOp, A_neqOp, A_ltOp, A_leOp, A_gtOp, A_geOp} A_oper;
+	     A_eqOp, A_neqOp, A_ltOp, A_leOp, A_gtOp, A_geOp,
+	     A_binAndOp, A_modOp, A_remOp, A_tickOp,
+	     A_andOp, A_orOp, A_xorOp} A_oper;
 
 struct A_var_
        {enum {A_simpleVar, A_fieldVar, A_subscriptVar} kind;

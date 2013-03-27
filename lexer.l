@@ -1,12 +1,11 @@
 %{
 /**************Lexical Analyser for ADA*************/
 /*Source:Ada Reference Manual, ISO/IEC 8652:2012(E)*/
-#include "y.tab.h"
-#include <string.h>
 #include "util.h"
+#include "symbol.h"
+#include "absyn.h"
 #include "errormsg.h"
-
-extern YYSTYPE yylval;
+#include "y.tab.h"
 
 int charPos=1;
 
@@ -140,10 +139,10 @@ COMMENT             --[^\n]*
 "<<"            { adjust(); return(LT_LT);}
 ">>"            { adjust(); return(GT_GT);}
 "<>"            { adjust(); return(BOX);}
-{IDENTIFIER}    { adjust(); yylval = String(yytext); return(IDENTIFIER);}
-{NUMBER}        { adjust(); yylval = String(yytext); return(NUMBER);}
-{CHARACTER}     { adjust(); yylval = String(yytext); return(CHARACTER);}
-{STRING}        { adjust(); yylval = String(yytext); return(STRING);}
+{IDENTIFIER}    { adjust(); yylval.sval = String(yytext); return(IDENTIFIER);}
+{NUMBER}        { adjust(); yylval.sval = String(yytext); return(NUMBER);}
+{CHARACTER}     { adjust(); yylval.sval = String(yytext); return(CHARACTER);}
+{STRING}        { adjust(); yylval.sval = String(yytext); return(STRING);}
 {COMMENT}       { adjust(); continue;}
 [ \t]           { adjust(); continue;}
 [\n]            { EM_newline(); continue;}

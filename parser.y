@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "util.h"
 #include "errormsg.h"
-
-#define YYSTYPE char*
+#include "symbol.h"
+#include "absyn.h"
 
 int yylex(void); /* function prototype */
 
@@ -14,19 +14,32 @@ void yyerror(char *s)
 }
 %}
 
+%union {
+	int pos;
+	int ival;
+	string sval;
+	A_var var;
+	A_exp exp;
+	A_dec dec;
+	A_oper oper;
+	A_expList expList;
+	}
+
+%type <expList> statement_s
+%type <exp> expression relation simple_expression term factor primary
+            literal name allocator qualified parenthesized_primary aggregate
+            statement simple_stmt unlabeled null_stmt condition
+%type <oper> logical short_circuit relational adding multiplying
+%token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK
+
 %token CHARACTER
 %token IDENTIFIER
 %token STRING
 %token NUMBER
-%token TICK
 %token DOT_DOT
 %token LT_LT
 %token BOX
-%token LT_EQ
-%token EXPON
-%token NE
 %token GT_GT
-%token GE
 %token IS_ASSIGNED
 %token RIGHT_SHAFT
 %token ABORT
@@ -36,7 +49,6 @@ void yyerror(char *s)
 %token ACCESS
 %token ALIASED
 %token ALL
-%token AND
 %token ARRAY
 %token AT
 %token BegiN
@@ -63,12 +75,10 @@ void yyerror(char *s)
 %token IS
 %token LIMITED
 %token LOOP
-%token MOD
 %token NEW
 %token NOT
 %token NuLL
 %token OF
-%token OR
 %token OTHERS
 %token OUT
 %token PACKAGE
@@ -79,7 +89,6 @@ void yyerror(char *s)
 %token RAISE
 %token RANGE
 %token RECORD
-%token REM
 %token RENAMES
 %token REQUEUE
 %token RETURN
@@ -97,7 +106,6 @@ void yyerror(char *s)
 %token WHEN
 %token WHILE
 %token WITH
-%token XOR
 
 %{
 %}
@@ -475,31 +483,47 @@ comp_assoc : choice_s RIGHT_SHAFT expression
 	;
 
 expression : relation
+        {$$ = $1;}
 	| expression logical relation
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	| expression short_circuit relation
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 logical : AND
+        {$$ = A_andOp;}
 	| OR
+	    {$$ = A_orOp;}
 	| XOR
+	    {$$ = A_xorOp;}
 	;
 
 short_circuit : AND THEN
+        {$$ = $1;}
 	| OR ELSE
+	    {$$ = $1;}
 	;
 
 relation : simple_expression
+        {$$ = $1;}
 	| simple_expression relational simple_expression
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	| simple_expression membership range
 	| simple_expression membership name
 	;
 
 relational : '='
+        {$$ = A_eqOp;}
 	| NE
+	    {$$ = A_neqOp;}
 	| '<'
+	    {$$ = A_ltOp;}
 	| LT_EQ
+	    {$$ = A_leOp;}
 	| '>'
+	    {$$ = A_gtOp;}
 	| GE
+	    {$$ = A_geOp;}
 	;
 
 membership : IN
@@ -508,7 +532,9 @@ membership : IN
 
 simple_expression : unary term
 	| term
+	    {$$ = $1;}
 	| simple_expression adding term
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 unary   : '+'
@@ -516,24 +542,35 @@ unary   : '+'
 	;
 
 adding  : '+'
+        {$$ = A_plusOp;}
 	| '-'
+	    {$$ = A_minusOp;}
 	| '&'
+	    {$$ = A_binAndOp;}
 	;
 
 term    : factor
+        {$$ = $1;}
 	| term multiplying factor
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 multiplying : '*'
+        {$$ = A_timesOp;}
 	| '/'
+	    {$$ = A_divideOp;}
 	| MOD
+	    {$$ = A_modOp;}
 	| REM
+	    {$$ = A_remOp;}
 	;
 
 factor : primary
+        {$$ = $1;}
 	| NOT primary
 	| ABS primary
 	| primary EXPON primary
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 primary : literal
@@ -545,9 +582,11 @@ primary : literal
 
 parenthesized_primary : aggregate
 	| '(' expression ')'
+	    {$$ = $2;}
 	;
 
 qualified : name TICK parenthesized_primary
+        {$$ = A_OpExp(EM_tokPos,A_tickOp,$1,$3);}
 	;
 
 allocator : NEW name
@@ -555,11 +594,15 @@ allocator : NEW name
 	;
 
 statement_s : statement
+        {$$ = A_ExpList($1,NULL);}
 	| statement_s statement
+	    {$$ = A_ExpList($2,$1);}
 	;
 
 statement : unlabeled
+        {$$ = $1;}
 	| label statement
+	    {$$ = $2;}
 	;
 
 unlabeled : simple_stmt
@@ -593,6 +636,7 @@ label : LT_LT IDENTIFIER GT_GT
 	;
 
 null_stmt : NuLL ';'
+        {$$ = A_NilExp(EM_tokPos);}
 	;
 
 assign_stmt : name IS_ASSIGNED expression ';'
@@ -612,6 +656,7 @@ cond_part : condition THEN
 	;
 
 condition : expression
+        {$$ = $1;}
 	;
 
 else_opt :

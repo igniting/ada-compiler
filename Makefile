@@ -1,5 +1,5 @@
-final: y.tab.o lex.yy.o errormsg.o util.o
-	cc -g y.tab.o lex.yy.o errormsg.o util.o -o final
+final: y.tab.o lex.yy.o errormsg.o util.o absyn.o
+	cc -g y.tab.o lex.yy.o errormsg.o util.o absyn.o -o final
 
 y.tab.o: y.tab.c
 	cc -g -c y.tab.c
@@ -22,5 +22,8 @@ lex.yy.c: lexer.l
 util.o: util.c util.h
 	cc -g -c util.c
 
+absyn.o: absyn.c absyn.h
+	cc -g -c absyn.c
+	
 clean: 
-	rm -f final util.o lex.yy.c lex.yy.o errormsg.o y.tab.c y.tab.h y.tab.o y.output
+	rm -f final util.o lex.yy.c lex.yy.o errormsg.o absyn.o y.tab.c y.tab.h y.tab.o y.output
