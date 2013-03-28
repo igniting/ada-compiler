@@ -84,6 +84,15 @@ A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right)
  return p;
 }
 
+A_exp A_UnaryOpExp(A_pos pos, A_unaryOper oper, A_exp exp)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_unaryOpExp;
+ p->pos=pos;
+ p->u.unaryOp.oper = oper;
+ p->u.unaryOp.exp=exp;
+ return p;
+}
+
 A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_recordExp;

@@ -22,28 +22,36 @@ void yyerror(char *s)
 	A_exp exp;
 	A_dec dec;
 	A_oper oper;
+	A_unaryOper unaryop;
 	A_expList expList;
 	}
 
 %type <expList> statement_s
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary aggregate
-            statement simple_stmt unlabeled null_stmt condition
-%type <oper> logical short_circuit relational adding multiplying
-%token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK
+            statement simple_stmt compound_stmt unlabeled null_stmt condition
+            range range_constraint simple_name pragma assign_stmt exit_stmt 
+            return_stmt goto_stmt procedure_call delay_stmt abort_stmt raise_stmt 
+            code_stmt requeue_stmt if_stmt case_stmt loop_stmt block accept_stmt 
+            select_stmt
+%type <oper> logical short_circuit relational adding multiplying membership
+%type <unaryop> unary
+%type <dec> decl object_decl number_decl type_decl subtype_decl subprog_decl
+            pkg_decl task_decl prot_decl exception_decl rename_decl generic_decl
+            body_stub
+%token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
+%token <unaryop> NOT ABS
+%token <sval> IDENTIFIER
 
 %token CHARACTER
-%token IDENTIFIER
 %token STRING
 %token NUMBER
-%token DOT_DOT
 %token LT_LT
 %token BOX
 %token GT_GT
 %token IS_ASSIGNED
 %token RIGHT_SHAFT
 %token ABORT
-%token ABS
 %token ABSTRACT
 %token ACCEPT
 %token ACCESS
@@ -76,7 +84,6 @@ void yyerror(char *s)
 %token LIMITED
 %token LOOP
 %token NEW
-%token NOT
 %token NuLL
 %token OF
 %token OTHERS
@@ -132,17 +139,29 @@ pragma_s :
 	;
 
 decl    : object_decl
+        {$$ = $1;}
 	| number_decl
+	    {$$ = $1;}
 	| type_decl
+	    {$$ = $1;}
 	| subtype_decl
+	    {$$ = $1;}
 	| subprog_decl
+	    {$$ = $1;}
 	| pkg_decl
+	    {$$ = $1;}
 	| task_decl
+	    {$$ = $1;}
 	| prot_decl
+	    {$$ = $1;}
 	| exception_decl
+	    {$$ = $1;}
 	| rename_decl
+	    {$$ = $1;}
 	| generic_decl
+	    {$$ = $1;}
 	| body_stub
+	    {$$ = $1;}
 	| error ';'
 	;
 
@@ -217,11 +236,15 @@ derived_type : NEW subtype_ind
 	;
 
 range_constraint : RANGE range
+        {$$ = $2;}
 	;
 
 range : simple_expression DOT_DOT simple_expression
+        {$$ = A_OpExp(EM_tokPos,A_rangeOp,$1,$3);}
 	| name TICK RANGE
+	    {$$ = $1;}
 	| name TICK RANGE '(' expression ')'
+	    {$$ = $1;}
 	;
 
 enumeration_type : '(' enum_id_s ')'
@@ -407,6 +430,7 @@ body : subprog_body
 	;
 
 name : simple_name
+        {$$ = $1;}
 	| indexed_comp
 	| selected_comp
 	| attribute
@@ -419,6 +443,7 @@ mark : simple_name
 	;
 
 simple_name : IDENTIFIER
+        {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 compound_name : simple_name
@@ -509,7 +534,9 @@ relation : simple_expression
 	| simple_expression relational simple_expression
 	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	| simple_expression membership range
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	| simple_expression membership name
+	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 relational : '='
@@ -527,10 +554,13 @@ relational : '='
 	;
 
 membership : IN
+        {$$ = A_inOp;}
 	| NOT IN
+	    {$$ = A_notInOp;}
 	;
 
 simple_expression : unary term
+        {$$ = A_UnaryOpExp(EM_tokPos,$1,$2);}
 	| term
 	    {$$ = $1;}
 	| simple_expression adding term
@@ -538,7 +568,9 @@ simple_expression : unary term
 	;
 
 unary   : '+'
+        {$$ = A_unaryplusOp;}
 	| '-'
+	    {$$ = A_unaryminusOp;}
 	;
 
 adding  : '+'
@@ -568,16 +600,23 @@ multiplying : '*'
 factor : primary
         {$$ = $1;}
 	| NOT primary
+	    {$$ = A_UnaryOpExp(EM_tokPos,A_notOp,$2);}
 	| ABS primary
+	    {$$ = A_UnaryOpExp(EM_tokPos,A_absOp,$2);}
 	| primary EXPON primary
 	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
 	;
 
 primary : literal
+        {$$ = $1;}
 	| name
+	    {$$ = $1;}
 	| allocator
+	    {$$ = $1;}
 	| qualified
+	    {$$ = $1;}
 	| parenthesized_primary
+	    {$$ = $1;}
 	;
 
 parenthesized_primary : aggregate
@@ -606,30 +645,50 @@ statement : unlabeled
 	;
 
 unlabeled : simple_stmt
+        {$$ = $1;}
 	| compound_stmt
+	    {$$ = $1;}
 	| pragma
+	    {$$ = $1;}
 	;
 
 simple_stmt : null_stmt
+        {$$ = $1;}
 	| assign_stmt
+	    {$$ = $1;}
 	| exit_stmt
+	    {$$ = $1;}
 	| return_stmt
+	    {$$ = $1;}
 	| goto_stmt
+	    {$$ = $1;}
 	| procedure_call
+	    {$$ = $1;}
 	| delay_stmt
+	    {$$ = $1;}
 	| abort_stmt
+	    {$$ = $1;}
 	| raise_stmt
+	    {$$ = $1;}
 	| code_stmt
+	    {$$ = $1;}
 	| requeue_stmt
+	    {$$ = $1;}
 	| error ';'
 	;
 
 compound_stmt : if_stmt
+        {$$ = $1;}
 	| case_stmt
+	    {$$ = $1;}
 	| loop_stmt
+	    {$$ = $1;}
 	| block
+	    {$$ = $1;}
 	| accept_stmt
+	    {$$ = $1;}
 	| select_stmt
+	    {$$ = $1;}
 	;
 
 label : LT_LT IDENTIFIER GT_GT

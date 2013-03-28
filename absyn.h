@@ -28,7 +28,11 @@ typedef struct A_efieldList_ *A_efieldList;
 typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp,
 	     A_eqOp, A_neqOp, A_ltOp, A_leOp, A_gtOp, A_geOp,
 	     A_binAndOp, A_modOp, A_remOp, A_tickOp,
-	     A_andOp, A_orOp, A_xorOp} A_oper;
+	     A_andOp, A_orOp, A_xorOp,
+	     A_inOp, A_notInOp,
+	     A_rangeOp} A_oper;
+
+typedef enum {A_notOp, A_absOp, A_unaryplusOp, A_unaryminusOp} A_unaryOper;
 
 struct A_var_
        {enum {A_simpleVar, A_fieldVar, A_subscriptVar} kind;
@@ -43,8 +47,8 @@ struct A_var_
 
 struct A_exp_
       {enum {A_varExp, A_nilExp, A_intExp, A_stringExp, A_callExp,
-	       A_opExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
-	       A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp} kind;
+	       A_opExp, A_unaryOpExp, A_recordExp, A_seqExp, A_assignExp,
+	       A_ifExp, A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -52,6 +56,7 @@ struct A_exp_
 	      string stringg;
 	      struct {S_symbol func; A_expList args;} call;
 	      struct {A_oper oper; A_exp left; A_exp right;} op;
+	      struct {A_unaryOper oper; A_exp exp;} unaryOp;
 	      struct {S_symbol typ; A_efieldList fields;} record;
 	      A_expList seq;
 	      struct {A_var var; A_exp exp;} assign;
@@ -71,6 +76,7 @@ struct A_dec_
 	    /* escape may change after the initial declaration */
 	    struct {S_symbol var; S_symbol typ; A_exp init; bool escape;} var;
 	    A_nametyList type;
+	    
 	  } u;
    };
 
@@ -109,6 +115,7 @@ A_exp A_IntExp(A_pos pos, int i);
 A_exp A_StringExp(A_pos pos, string s);
 A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args);
 A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right);
+A_exp A_UnaryOpExp(A_pos pos, A_unaryOper oper, A_exp exp);
 A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields);
 A_exp A_SeqExp(A_pos pos, A_expList seq);
 A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp);
