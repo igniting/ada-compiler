@@ -119,13 +119,21 @@ A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp)
  return p;
 }
 
-A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp elsee)
+A_exp A_IfExp(A_pos pos, A_expList cond_clauses, A_expList elsee)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_ifExp;
  p->pos=pos;
- p->u.iff.test=test;
- p->u.iff.then=then;
+ p->u.iff.cond_clauses=cond_clauses;
  p->u.iff.elsee=elsee;
+ return p;
+}
+
+A_exp A_CondExp(A_pos pos, A_exp test, A_expList stmts)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_condExp;
+ p->pos=pos;
+ p->u.cond.test=test;
+ p->u.cond.stmts=stmts;
  return p;
 }
 
@@ -176,6 +184,14 @@ A_exp A_ArrayExp(A_pos pos, S_symbol typ, A_exp size, A_exp init)
  return p;
 }
 
+A_exp A_NotImplemented(A_pos pos, string msg)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_notImplemented;
+ p->pos=pos;
+ p->u.msg=msg;
+ return p;
+}
+
 A_dec A_FunctionDec(A_pos pos, A_fundecList function)
 {A_dec p = checked_malloc(sizeof(*p));
  p->kind=A_functionDec;
@@ -198,6 +214,14 @@ A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init)
 A_dec A_TypeDec(A_pos pos, A_nametyList type)
 {A_dec p = checked_malloc(sizeof(*p));
  p->kind=A_typeDec;
+ p->pos=pos;
+ p->u.type=type;
+ return p;
+}
+
+A_dec A_ObjDec(A_pos pos, A_nametyList type)
+{A_dec p = checked_malloc(sizeof(*p));
+ p->kind=A_objDec;
  p->pos=pos;
  p->u.type=type;
  return p;

@@ -26,14 +26,17 @@ void yyerror(char *s)
 	A_expList expList;
 	}
 
-%type <expList> statement_s
+%type <expList> statement_s def_id_s goal_symbol compilation c_name_list
+                cond_clause_s else_opt
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary aggregate
             statement simple_stmt compound_stmt unlabeled null_stmt condition
             range range_constraint simple_name pragma assign_stmt exit_stmt 
             return_stmt goto_stmt procedure_call delay_stmt abort_stmt raise_stmt 
             code_stmt requeue_stmt if_stmt case_stmt loop_stmt block accept_stmt 
-            select_stmt
+            select_stmt def_id pragma_arg_s pragma_arg comp_unit pragma_s
+            compound_name unit pkg_body subprog_body subunit
+            rename_unit cond_part cond_clause
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 %type <dec> decl object_decl number_decl type_decl subtype_decl subprog_decl
@@ -120,22 +123,31 @@ void yyerror(char *s)
 %%
 
 goal_symbol : compilation
+        {$$ = $1;}
 	;
 
 pragma  : PRAGMA IDENTIFIER ';'
+        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	| PRAGMA simple_name '(' pragma_arg_s ')' ';'
+	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	;
 
 pragma_arg_s : pragma_arg
+        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	| pragma_arg_s ',' pragma_arg
+	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	;
 
 pragma_arg : expression
+        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	| simple_name RIGHT_SHAFT expression
+	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	;
 
 pragma_s :
+        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	| pragma_s pragma
+	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
 	;
 
 decl    : object_decl
@@ -163,16 +175,20 @@ decl    : object_decl
 	| body_stub
 	    {$$ = $1;}
 	| error ';'
+	    {EM_error(EM_tokPos,"Illegal Declaration.");}
 	;
 
 object_decl : def_id_s ':' object_qualifier_opt object_subtype_def init_opt ';'
 	;
 
 def_id_s : def_id
+        {$$ = A_ExpList($1,NULL);}
 	| def_id_s ',' def_id
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 def_id  : IDENTIFIER
+        {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 object_qualifier_opt :
@@ -447,11 +463,15 @@ simple_name : IDENTIFIER
 	;
 
 compound_name : simple_name
+        { $$ = $1;}
 	| compound_name '.' simple_name
+	    { $$ = A_OpExp(EM_tokPos,A_dotOp,$1,$3);}
 	;
 
 c_name_list : compound_name
+        { $$ = A_ExpList($1,NULL);}
 	 | c_name_list ',' compound_name
+	    { $$ = A_ExpList($3,$1);}
 	;
 
 used_char : CHARACTER
@@ -702,16 +722,21 @@ assign_stmt : name IS_ASSIGNED expression ';'
 	;
 
 if_stmt : IF cond_clause_s else_opt END IF ';'
+        {$$ = A_IfExp(EM_tokPos,$2,$3);}
 	;
 
 cond_clause_s : cond_clause
+        {$$ = A_ExpList($1,NULL);}
 	| cond_clause_s ELSIF cond_clause
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 cond_clause : cond_part statement_s
+        {$$ = A_CondExp(EM_tokPos,$1,$2);}
 	;
 
 cond_part : condition THEN
+        {$$ = $1;}
 	;
 
 condition : expression
@@ -719,7 +744,9 @@ condition : expression
 	;
 
 else_opt :
+        {$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| ELSE statement_s
+	    {$$ = $2;}
 	;
 
 case_stmt : case_hdr pragma_s alternative_s END CASE ';'
@@ -1046,11 +1073,14 @@ abort_stmt : ABORT name_s ';'
 
 compilation :
 	| compilation comp_unit
+	    { $$ = A_ExpList($2,$1);}
 	| pragma pragma_s
+	    { $$ = A_ExpList(A_NotImplemented(EM_tokPos,"PRAGMA not implemented"),NULL);}
 	;
 
 comp_unit : context_spec private_opt unit pragma_s
 	| private_opt unit pragma_s
+	    { $$ = $2;}
 	;
 
 private_opt :
@@ -1070,12 +1100,19 @@ use_clause_opt :
 	;
 
 unit : pkg_decl
+        { $$ = $1;}
 	| pkg_body
+	    { $$ = $1;}
 	| subprog_decl
+	    { $$ = $1;}
 	| subprog_body
+	    { $$ = $1;}
 	| subunit
+	    { $$ = $1;}
 	| generic_decl
+	    { $$ = $1;}
 	| rename_unit
+	    { $$ = $1;}
 	;
 
 subunit : SEPARATE '(' compound_name ')'
