@@ -8,6 +8,8 @@
 
 int yylex(void); /* function prototype */
 
+A_expList absyn_root;
+
 void yyerror(char *s)
 {
  EM_error(EM_tokPos, "%s", s);
@@ -27,7 +29,8 @@ void yyerror(char *s)
 	}
 
 %type <expList> statement_s def_id_s goal_symbol compilation c_name_list
-                cond_clause_s else_opt
+                cond_clause_s else_opt enum_id_s index_s iter_index_constraint
+                iter_discrete_range_s variant_s choice_s alternative_s
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary aggregate
             statement simple_stmt compound_stmt unlabeled null_stmt condition
@@ -35,8 +38,14 @@ void yyerror(char *s)
             return_stmt goto_stmt procedure_call delay_stmt abort_stmt raise_stmt 
             code_stmt requeue_stmt if_stmt case_stmt loop_stmt block accept_stmt 
             select_stmt def_id pragma_arg_s pragma_arg comp_unit pragma_s
-            compound_name unit pkg_body subprog_body subunit
-            rename_unit cond_part cond_clause
+            compound_name unit pkg_body subprog_body subunit case_hdr
+            rename_unit cond_part cond_clause init_opt subtype_ind when_opt
+            name_opt operator_symbol selected_comp used_char enum_id type_def
+            enumeration_type integer_type real_type array_type record_type
+            range_spec float_type fixed_type unconstr_array_type
+            constr_array_type range_spec_opt index component_subtype_def
+            discrete_range record_def comp_list comp_decl_s variant_part_opt
+            variant_part comp_decl variant choice discrete_with_range alternative
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 %type <dec> decl object_decl number_decl type_decl subtype_decl subprog_decl
@@ -44,10 +53,8 @@ void yyerror(char *s)
             body_stub
 %token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
 %token <unaryop> NOT ABS
-%token <sval> IDENTIFIER
+%token <sval> IDENTIFIER CHARACTER STRING
 
-%token CHARACTER
-%token STRING
 %token NUMBER
 %token LT_LT
 %token BOX
@@ -123,31 +130,31 @@ void yyerror(char *s)
 %%
 
 goal_symbol : compilation
-        {$$ = $1;}
+        {absyn_root = $1;}
 	;
 
 pragma  : PRAGMA IDENTIFIER ';'
-        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+        { $$ = A_Pragma(EM_tokPos,$2);}
 	| PRAGMA simple_name '(' pragma_arg_s ')' ';'
-	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+	    { $$ = A_Pragmalist(EM_tokPos,$2,$4);}
 	;
 
 pragma_arg_s : pragma_arg
-        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+        {$$ = A_ExpList($1,NULL);}
 	| pragma_arg_s ',' pragma_arg
-	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 pragma_arg : expression
-        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+        {$$ = $1;}
 	| simple_name RIGHT_SHAFT expression
-	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+	    {$$ = $1;}
 	;
 
 pragma_s :
-        { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+        {$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| pragma_s pragma
-	    { $$ = A_NotImplemented(EM_tokPos,"PRAGMA not implemented");}
+	    {$$ = A_ExpList($2,$1);}
 	;
 
 decl    : object_decl
@@ -173,7 +180,7 @@ decl    : object_decl
 	| generic_decl
 	    {$$ = $1;}
 	| body_stub
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"body_stub not implemented");}
 	| error ';'
 	    {EM_error(EM_tokPos,"Illegal Declaration.");}
 	;
@@ -202,7 +209,9 @@ object_subtype_def : subtype_ind
 	;
 
 init_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| IS_ASSIGNED expression
+	    {$$ = $2;}
 	;
 
 number_decl : def_id_s ':' CONSTANT IS_ASSIGNED expression ';'
@@ -220,14 +229,22 @@ type_completion :
 	| IS type_def
 	;
 
-type_def : enumeration_type 
+type_def : enumeration_type
+        {$$ = $1;} 
 	| integer_type
+	    {$$ = $1;}
 	| real_type
+	    {$$ = $1;}
 	| array_type
+	    {$$ = $1;}
 	| record_type
+	    {$$ = $1;}
 	| access_type
+	    {$$ = A_NotImplemented(EM_tokPos,"access type not implemented");}
 	| derived_type
+	    {$$ = A_NotImplemented(EM_tokPos,"derived type not implemented");}
 	| private_type
+	    {$$ = A_NotImplemented(EM_tokPos,"private type not implemented");}
 	;
 
 subtype_decl : SUBTYPE IDENTIFIER IS subtype_ind ';'
@@ -235,6 +252,7 @@ subtype_decl : SUBTYPE IDENTIFIER IS subtype_ind ';'
 
 subtype_ind : name constraint
 	| name
+	    {$$ = $1;}
 	;
 
 constraint : range_constraint
@@ -264,49 +282,69 @@ range : simple_expression DOT_DOT simple_expression
 	;
 
 enumeration_type : '(' enum_id_s ')'
+        {$$ = A_EnumExp(EM_tokPos,$2);}
 
 enum_id_s : enum_id
+        {$$ = A_ExpList($1,NULL);}
 	| enum_id_s ',' enum_id
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 enum_id : IDENTIFIER
+        {$$ = A_StringExp(EM_tokPos,$1);}
 	| CHARACTER
+	    {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 integer_type : range_spec
+        {$$ = A_IntdefExp(EM_tokPos,$1);}
 	| MOD expression
+	    {$$ = A_IntdefExp(EM_tokPos,$2);}
 	;
 	
 
 range_spec : range_constraint
+        {$$ = $1;}
 	;
 
 range_spec_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| range_spec
+	    {$$ = $1;}
 	;
 
 real_type : float_type
+        {$$ = $1;}
 	| fixed_type
+	    {$$ = $1;}
 	;
 
 float_type : DIGITS expression range_spec_opt
+        {$$ = A_FloatdefExp(EM_tokPos,$2,$3);}
 	;
 
 fixed_type : DELTA expression range_spec
+        {$$ = A_FixeddefExp(EM_tokPos,$2,$3);}
 	| DELTA expression DIGITS expression range_spec_opt
+	    {$$ = A_FixeddefdigitExp(EM_tokPos,$2,$4,$5);}
 	;
 
 array_type : unconstr_array_type
+        {$$ = $1;}
 	| constr_array_type
+	    {$$ = $1;}
 	;
 
 unconstr_array_type : ARRAY '(' index_s ')' OF component_subtype_def
+        {$$ = A_UnconarraydefExp(EM_tokPos,$3,$6);}
 	;
 
 constr_array_type : ARRAY iter_index_constraint OF component_subtype_def
+        {$$ = A_ConarraydefExp(EM_tokPos,$2,$4);}
 	;
 
 component_subtype_def : aliased_opt subtype_ind
+        {$$ = $2;}
 	;
 
 aliased_opt : 
@@ -314,21 +352,29 @@ aliased_opt :
 	;
 
 index_s : index
+        {$$ = A_ExpList($1,NULL);}
 	| index_s ',' index
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 index : name RANGE BOX
+        {$$ = $1;}
 	;
 
 iter_index_constraint : '(' iter_discrete_range_s ')'
+        {$$ = $2;}
 	;
 
 iter_discrete_range_s : discrete_range
+        {$$ = A_ExpList($1,NULL);}
 	| iter_discrete_range_s ',' discrete_range
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 discrete_range : name range_constr_opt
+        {$$ = $1;}
 	| range
+	    {$$ = $1;}
 	;
 
 range_constr_opt :
@@ -336,10 +382,13 @@ range_constr_opt :
 	;
 
 record_type : tagged_opt limited_opt record_def
+        {$$ = $3;}
 	;
 
 record_def : RECORD pragma_s comp_list END RECORD
+        {$$ = A_RecorddefExp(EM_tokPos,$2,$3);}
 	| NuLL RECORD
+	    {$$ = A_NullrecorddefExp(EM_tokPos);}
 	;
 
 tagged_opt :
@@ -348,20 +397,28 @@ tagged_opt :
 	;
 
 comp_list : comp_decl_s variant_part_opt
+        {$$ = A_CompList1(EM_tokPos,$1,$2);}
 	| variant_part pragma_s
+	    {$$ = A_CompList2(EM_tokPos,$1,$2);}
 	| NuLL ';' pragma_s
+	    {$$ = A_CompList3(EM_tokPos,$3);}
 	;
 
 comp_decl_s : comp_decl
+        {$$ = A_CompDecl1(EM_tokPos,$1);}
 	| comp_decl_s pragma_s comp_decl
+	    {$$ = A_CompDecl2(EM_tokPos,$1,$2,$3);}
 	;
 
 variant_part_opt : pragma_s
+        {$$ = A_VariantPartOpt1(EM_tokPos,$1);}
 	| pragma_s variant_part pragma_s
+	    {$$ = A_VariantPartOpt2(EM_tokPos,$1,$2,$3);}
 	;
 
 comp_decl : def_id_s ':' component_subtype_def init_opt ';'
 	| error ';'
+	    {EM_error(EM_tokPos,"Error in comp decl");}
 	;
 
 discrim_part : '(' discrim_spec_s ')'
@@ -380,26 +437,37 @@ access_opt :
 	;
 
 variant_part : CASE simple_name IS pragma_s variant_s END CASE ';'
+        {$$ = A_VariantPart($2,$4,$5);}
 	;
 
 variant_s : variant
+        {$$ = A_ExpList($1,NULL);}
 	| variant_s variant
+	    {$$ = A_ExpList($2,$1);}
 	;
 
 variant : WHEN choice_s RIGHT_SHAFT pragma_s comp_list
+        {$$ = A_Variant(EM_tokPos,$2,$4,$5);}
 	;
 
 choice_s : choice
+        {$$ = A_ExpList($1,NULL);}
 	| choice_s '|' choice
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 choice : expression
+        {$$ = $1;}
 	| discrete_with_range
+	    {$$ = $1;}
 	| OTHERS
+	    {$$ = A_StringExp(EM_tokPos,"OTHERS");}
 	;
 
 discrete_with_range : name range_constraint
+        {$$ = $2;}
 	| range
+        {$$ = $1;}	
 	;
 
 access_type : ACCESS subtype_ind
@@ -448,9 +516,13 @@ body : subprog_body
 name : simple_name
         {$$ = $1;}
 	| indexed_comp
-	| selected_comp
+	    {$$ = A_NotImplemented(EM_tokPos,"indexed name not implemented");}
+	| selected_comp 
+	    {$$ = $1;}   
 	| attribute
+	    {$$ = A_NotImplemented(EM_tokPos,"attribute not implemented");}
 	| operator_symbol
+	    {$$ = $1;}
 	;
 
 mark : simple_name
@@ -475,9 +547,11 @@ c_name_list : compound_name
 	;
 
 used_char : CHARACTER
+        { $$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 operator_symbol : STRING
+        { $$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 indexed_comp : name '(' value_s ')'
@@ -494,9 +568,13 @@ value : expression
 	;
 
 selected_comp : name '.' simple_name
+        {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,$3);}
 	| name '.' used_char
+	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,$3);}
 	| name '.' operator_symbol
+	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,$3);}
 	| name '.' ALL
+	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,A_StringExp(EM_tokPos,"ALL"));}
 	;
 
 attribute : name TICK attribute_id
@@ -683,18 +761,19 @@ simple_stmt : null_stmt
 	| goto_stmt
 	    {$$ = $1;}
 	| procedure_call
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"procedure not implemented");}
 	| delay_stmt
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"delay not implemented");}
 	| abort_stmt
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"abort not implemented");}
 	| raise_stmt
 	    {$$ = $1;}
 	| code_stmt
 	    {$$ = $1;}
 	| requeue_stmt
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"requeue not implemented");}
 	| error ';'
+	    {EM_error(EM_tokPos,"Error in statement.");}
 	;
 
 compound_stmt : if_stmt
@@ -750,16 +829,21 @@ else_opt :
 	;
 
 case_stmt : case_hdr pragma_s alternative_s END CASE ';'
+        {$$ = A_Case(EM_tokPos,$1,$2,$3);}
 	;
 
 case_hdr : CASE expression IS
+        {$$ = $2;}
 	;
 
 alternative_s :
+        {$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| alternative_s alternative
+	    {$$ = A_ExpList($2,$1);}
 	;
 
 alternative : WHEN choice_s RIGHT_SHAFT statement_s
+        {$$ = A_Alternative(EM_tokPos,$2,$4);}
 	;
 
 loop_stmt : label_opt iteration basic_loop id_opt ';'
@@ -806,21 +890,29 @@ except_handler_part_opt :
 	;
 
 exit_stmt : EXIT name_opt when_opt ';'
+        {$$ = A_ExitExp(EM_tokPos,$2,$3);}
 	;
 
 name_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| name
+	    {$$ = $1;}
 	;
 
 when_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| WHEN condition
+	    {$$ = $2;}
 	;
 
 return_stmt : RETURN ';'
+        {$$ = A_ReturnExp(EM_tokPos,A_NilExp(EM_tokPos));}
 	| RETURN expression ';'
+	    {$$ = A_ReturnExp(EM_tokPos,$2);}
 	;
 
 goto_stmt : GOTO name ';'
+        {$$ = A_GotoExp(EM_tokPos,$2);}
 	;
 
 subprog_decl : subprog_spec ';'

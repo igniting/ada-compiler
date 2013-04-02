@@ -165,6 +165,15 @@ A_exp A_BreakExp(A_pos pos)
  return p;
 }
 
+A_exp A_ExitExp(A_pos pos, A_exp exitname, A_exp exitcondition)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_exitExp;
+ p->pos=pos;
+ p->u.exit.exitname=exitname;
+ p->u.exit.exitcondition=exitcondition;
+ return p;
+}
+
 A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_letExp;
@@ -184,6 +193,135 @@ A_exp A_ArrayExp(A_pos pos, S_symbol typ, A_exp size, A_exp init)
  return p;
 }
 
+A_exp A_ReturnExp(A_pos pos, A_exp retval)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_returnExp;
+ p->pos=pos;
+ p->u.retval=retval;
+ return p;
+}
+
+A_exp A_GotoExp(A_pos pos, A_exp gotolabel)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_gotoExp;
+ p->pos=pos;
+ p->u.gotolabel=gotolabel;
+ return p;
+}
+
+A_exp A_EnumExp(A_pos pos, A_expList enumids)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_enumExp;
+ p->pos=pos;
+ p->u.enumids=enumids;
+ return p;
+}
+
+A_exp A_IntdefExp(A_pos pos, A_exp intdef)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_intdefExp;
+ p->pos=pos;
+ p->u.intdef=intdef;
+ return p;
+}
+
+A_exp A_FloatdefExp(A_pos pos, A_exp numdigits, A_exp rangeopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_floatdefExp;
+ p->pos=pos;
+ p->u.floatt.numdigits=numdigits;
+ p->u.floatt.rangeopt=rangeopt;
+ return p;
+}
+
+A_exp A_FixeddefExp(A_pos pos, A_exp delta, A_exp range)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_fixeddefExp;
+ p->pos=pos;
+ p->u.fixed.delta=delta;
+ p->u.fixed.range=range;
+ return p;
+}
+
+A_exp A_FixeddefdigitExp(A_pos pos, A_exp delta, A_exp numdigits, A_exp rangeopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_fixeddefdigitExp;
+ p->pos=pos;
+ p->u.fixeddig.delta=delta;
+ p->u.fixeddig.numdigits=numdigits;
+ p->u.fixeddig.rangeopt=rangeopt;
+ return p;
+}
+
+A_exp A_UnconarraydefExp(A_pos pos, A_expList indexs, A_exp subtypeind)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_unconarraydefExp;
+ p->pos=pos;
+ p->u.unconarray.indexs=indexs;
+ p->u.unconarray.subtypeind=subtypeind;
+ return p;
+}
+
+A_exp A_ConarraydefExp(A_pos pos, A_expList iterindex, A_exp subtypeind)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_conarraydefExp;
+ p->pos=pos;
+ p->u.conarray.iterindex=iterindex;
+ p->u.conarray.subtypeind=subtypeind;
+ return p;
+}
+
+A_exp A_NullrecorddefExp(A_pos pos)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_nullrecorddefExp;
+ p->pos=pos;
+ return p;
+}
+
+A_exp A_Pragma(A_pos pos, string pragmaname)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_pragma;
+ p->pos=pos;
+ p->u.pragmaname=pragmaname;
+ return p;
+}
+
+A_exp A_Pragmalist(A_pos pos, A_exp name, A_expList pragmaargs)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_pragmalist;
+ p->pos=pos;
+ p->u.pragmalist.name=name;
+ p->u.pragmalist.pragmaargs=pragmaargs;
+ return p;
+}
+
+A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_recorddefExp;
+ p->pos=pos;
+ p->u.recorddef.pragmas=pragmas;
+ p->u.recorddef.complist=complist;
+ return p;
+}
+
+A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_alternative;
+ p->pos=pos;
+ p->u.alternative.choices=choices;
+ p->u.alternative.stmts=stmts;
+ return p;
+}
+
+A_exp A_Case(A_pos pos, A_exp header, A_expList pragmas, A_expList alternatives)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_caseExp;
+ p->pos=pos;
+ p->u.caseexp.header=header;
+ p->u.caseexp.pragmas=pragmas;
+ p->u.caseexp.alternatives=alternatives;
+ return p;
+}
 A_exp A_NotImplemented(A_pos pos, string msg)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_notImplemented;
@@ -214,14 +352,6 @@ A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init)
 A_dec A_TypeDec(A_pos pos, A_nametyList type)
 {A_dec p = checked_malloc(sizeof(*p));
  p->kind=A_typeDec;
- p->pos=pos;
- p->u.type=type;
- return p;
-}
-
-A_dec A_ObjDec(A_pos pos, A_nametyList type)
-{A_dec p = checked_malloc(sizeof(*p));
- p->kind=A_objDec;
  p->pos=pos;
  p->u.type=type;
  return p;

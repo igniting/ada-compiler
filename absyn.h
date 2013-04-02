@@ -49,8 +49,11 @@ struct A_var_
 struct A_exp_
       {enum {A_varExp, A_nilExp, A_intExp, A_stringExp, A_callExp,
 	       A_opExp, A_unaryOpExp, A_recordExp, A_seqExp, A_assignExp,
-	       A_ifExp, A_condExp, A_whileExp, A_forExp, A_breakExp, A_letExp,
-	       A_arrayExp, A_notImplemented} kind;
+	       A_ifExp, A_condExp, A_whileExp, A_forExp, A_breakExp, A_exitExp, 
+	       A_letExp, A_arrayExp, A_returnExp, A_gotoExp, A_enumExp, A_intdefExp,
+	       A_floatdefExp, A_fixeddefExp, A_fixeddefdigitExp, A_unconarraydefExp,
+	       A_conarraydefExp, A_nullrecorddefExp, A_recorddefExp, A_pragma,
+	       A_pragmalist, A_alternative, A_caseExp, A_notImplemented} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -67,20 +70,35 @@ struct A_exp_
 	      struct {A_exp test, body;} whilee;
 	      struct {S_symbol var; A_exp lo,hi,body; bool escape;} forr;
 	      /* breakk; - need only the pos */
+	      struct {A_exp exitname,exitcondition;} exit;
 	      struct {A_decList decs; A_exp body;} let;
 	      struct {S_symbol typ; A_exp size, init;} array;
+	      A_exp retval;
+	      A_exp gotolabel;
+  	      A_expList enumids;
+  	      A_exp intdef;
+  	      struct {A_exp numdigits, rangeopt;} floatt;
+  	      struct {A_exp delta, range;} fixed;
+  	      struct {A_exp delta, numdigits, rangeopt;} fixeddig;
+  	      struct {A_expList indexs; A_exp subtypeind;} unconarray;
+  	      struct {A_expList iterindex; A_exp subtypeind;} conarray;
+  	      string pragmaname;
+  	      struct {A_exp name; A_expList pragmaargs;} pragmalist;
+  	      /* Null record requires only pos */
+  	      struct {A_expList pragmas;A_exp complist;} recorddef;
+  	      struct {A_expList choices, stmts;} alternative;
+  	      struct {A_exp header; A_expList pragmas, alternatives;} caseexp;
 	      string msg;
 	    } u;
      };
 
 struct A_dec_ 
-    {enum {A_functionDec, A_varDec, A_typeDec, A_objDec} kind;
+    {enum {A_functionDec, A_varDec, A_typeDec} kind;
      A_pos pos;
      union {A_fundecList function;
 	    /* escape may change after the initial declaration */
 	    struct {S_symbol var; S_symbol typ; A_exp init; bool escape;} var;
 	    A_nametyList type;
-	    A_nametyList objectType;
 	  } u;
    };
 
@@ -128,13 +146,28 @@ A_exp A_CondExp(A_pos pos, A_exp test, A_expList stmts);
 A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body);
 A_exp A_ForExp(A_pos pos, S_symbol var, A_exp lo, A_exp hi, A_exp body);
 A_exp A_BreakExp(A_pos pos);
+A_exp A_ExitExp(A_pos pos, A_exp exitname, A_exp exitcondition);
 A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body);
 A_exp A_ArrayExp(A_pos pos, S_symbol typ, A_exp size, A_exp init);
+A_exp A_ReturnExp(A_pos, A_exp retval);
+A_exp A_GotoExp(A_pos, A_exp gotolabel);
+A_exp A_EnumExp(A_pos pos, A_expList enumids);
+A_exp A_IntdefExp(A_pos pos, A_exp intdef);
+A_exp A_FloatdefExp(A_pos pos, A_exp numdigits, A_exp rangeopt);
+A_exp A_FixeddefExp(A_pos pos, A_exp delta, A_exp range);
+A_exp A_FixeddefdigitExp(A_pos pos, A_exp delta, A_exp numdigits, A_exp rangeopt);
+A_exp A_UnconarraydefExp(A_pos pos, A_expList indexs, A_exp subtypeind);
+A_exp A_ConarraydefExp(A_pos pos, A_expList iterindex, A_exp subtypeind);
+A_exp A_NullrecorddefExp(A_pos pos);
+A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist);
+A_exp A_Pragma(A_pos pos, string pragmaname);
+A_exp A_Pragmalist(A_pos pos, A_exp name, A_expList pragmaargs);
+A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts);
+A_exp A_Case(A_pos pos, A_exp header, A_expList pragmas, A_expList alternatives);
 A_exp A_NotImplemented(A_pos pos, string msg);
 A_dec A_FunctionDec(A_pos pos, A_fundecList function);
 A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
 A_dec A_TypeDec(A_pos pos, A_nametyList type);
-A_dec A_ObjDec(A_pos pos, A_nametyList type);
 A_ty A_NameTy(A_pos pos, S_symbol name);
 A_ty A_RecordTy(A_pos pos, A_fieldList record);
 A_ty A_ArrayTy(A_pos pos, S_symbol array);
