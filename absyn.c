@@ -33,7 +33,6 @@ A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp)
  return p;
 }
 
-
 A_exp A_VarExp(A_pos pos, A_var var)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_varExp;
@@ -128,33 +127,41 @@ A_exp A_IfExp(A_pos pos, A_expList cond_clauses, A_expList elsee)
  return p;
 }
 
+A_exp A_WhileExp(A_pos pos, A_exp test)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_whileExp;
+ p->pos=pos;
+ p->u.whilee.test=test;
+ return p;
+}
+
+A_exp A_ForExp(A_pos pos, A_exp var, A_exp reverse, A_exp range)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_forExp;
+ p->pos=pos;
+ p->u.forr.var=var;
+ p->u.forr.reverse=reverse;
+ p->u.forr.range=range;
+ return p;
+}
+
+A_exp A_LoopExp(A_pos pos, A_exp labelopt, A_exp iteration, A_expList basicloop, A_exp idopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_loopExp;
+ p->pos=pos;
+ p->u.loop.labelopt=labelopt;
+ p->u.loop.iteration=iteration;
+ p->u.loop.basicloop=basicloop;
+ p->u.loop.idopt=idopt;
+ return p;
+}
+
 A_exp A_CondExp(A_pos pos, A_exp test, A_expList stmts)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_condExp;
  p->pos=pos;
  p->u.cond.test=test;
  p->u.cond.stmts=stmts;
- return p;
-}
-
-A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_whileExp;
- p->pos=pos;
- p->u.whilee.test=test;
- p->u.whilee.body=body;
- return p;
-}
-
-A_exp A_ForExp(A_pos pos, S_symbol var, A_exp lo, A_exp hi, A_exp body)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_forExp;
- p->pos=pos;
- p->u.forr.var=var;
- p->u.forr.lo=lo;
- p->u.forr.hi=hi;
- p->u.forr.body=body;
- p->u.forr.escape=TRUE;
  return p;
 }
 
@@ -322,6 +329,15 @@ A_exp A_Case(A_pos pos, A_exp header, A_expList pragmas, A_expList alternatives)
  p->u.caseexp.alternatives=alternatives;
  return p;
 }
+
+A_exp A_RaiseExp(A_pos pos, A_exp nameopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_raiseExp;
+ p->pos=pos;
+ p->u.nameopt=nameopt;
+ return p;
+}
+
 A_exp A_NotImplemented(A_pos pos, string msg)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_notImplemented;
@@ -354,6 +370,13 @@ A_dec A_TypeDec(A_pos pos, A_nametyList type)
  p->kind=A_typeDec;
  p->pos=pos;
  p->u.type=type;
+ return p;
+}
+
+A_dec A_GlobalDec(A_pos pos)
+{A_dec p = checked_malloc(sizeof(*p));
+ p->kind=A_globalDec;
+ p->pos=pos;
  return p;
 }
 

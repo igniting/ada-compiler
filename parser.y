@@ -28,34 +28,34 @@ void yyerror(char *s)
 	A_expList expList;
 	}
 
-%type <expList> statement_s def_id_s goal_symbol compilation c_name_list
+%type <expList> statement_s goal_symbol compilation c_name_list
                 cond_clause_s else_opt enum_id_s index_s iter_index_constraint
-                iter_discrete_range_s variant_s choice_s alternative_s
+                iter_discrete_range_s choice_s alternative_s pragma_arg_s pragma_s
+                basic_loop
 %type <exp> expression relation simple_expression term factor primary
-            literal name allocator qualified parenthesized_primary aggregate
+            literal name allocator qualified parenthesized_primary 
             statement simple_stmt compound_stmt unlabeled null_stmt condition
             range range_constraint simple_name pragma assign_stmt exit_stmt 
-            return_stmt goto_stmt procedure_call delay_stmt abort_stmt raise_stmt 
-            code_stmt requeue_stmt if_stmt case_stmt loop_stmt block accept_stmt 
-            select_stmt def_id pragma_arg_s pragma_arg comp_unit pragma_s
-            compound_name unit pkg_body subprog_body subunit case_hdr
-            rename_unit cond_part cond_clause init_opt subtype_ind when_opt
-            name_opt operator_symbol selected_comp used_char enum_id type_def
-            enumeration_type integer_type real_type array_type record_type
-            range_spec float_type fixed_type unconstr_array_type
-            constr_array_type range_spec_opt index component_subtype_def
-            discrete_range record_def comp_list comp_decl_s variant_part_opt
-            variant_part comp_decl variant choice discrete_with_range alternative
+            return_stmt goto_stmt raise_stmt 
+            code_stmt if_stmt case_stmt loop_stmt block pragma_arg comp_unit
+            compound_name unit subprog_body case_hdr
+            cond_part cond_clause subtype_ind when_opt
+            name_opt operator_symbol selected_comp used_char enum_id 
+            range_spec range_spec_opt index component_subtype_def
+            discrete_range choice discrete_with_range alternative iter_part 
+            iteration reverse_opt designator id_opt label_opt
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
+/*******************************************************************************
 %type <dec> decl object_decl number_decl type_decl subtype_decl subprog_decl
             pkg_decl task_decl prot_decl exception_decl rename_decl generic_decl
             body_stub
+*******************************************************************************/
 %token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
 %token <unaryop> NOT ABS
-%token <sval> IDENTIFIER CHARACTER STRING
+%token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE
+%token <ival> NUMBER
 
-%token NUMBER
 %token LT_LT
 %token BOX
 %token GT_GT
@@ -94,7 +94,6 @@ void yyerror(char *s)
 %token LIMITED
 %token LOOP
 %token NEW
-%token NuLL
 %token OF
 %token OTHERS
 %token OUT
@@ -109,7 +108,6 @@ void yyerror(char *s)
 %token RENAMES
 %token REQUEUE
 %token RETURN
-%token REVERSE
 %token SELECT
 %token SEPARATE
 %token SUBTYPE
@@ -158,29 +156,17 @@ pragma_s :
 	;
 
 decl    : object_decl
-        {$$ = $1;}
 	| number_decl
-	    {$$ = $1;}
 	| type_decl
-	    {$$ = $1;}
 	| subtype_decl
-	    {$$ = $1;}
 	| subprog_decl
-	    {$$ = $1;}
 	| pkg_decl
-	    {$$ = $1;}
 	| task_decl
-	    {$$ = $1;}
 	| prot_decl
-	    {$$ = $1;}
 	| exception_decl
-	    {$$ = $1;}
 	| rename_decl
-	    {$$ = $1;}
 	| generic_decl
-	    {$$ = $1;}
 	| body_stub
-	    {$$ = A_NotImplemented(EM_tokPos,"body_stub not implemented");}
 	| error ';'
 	    {EM_error(EM_tokPos,"Illegal Declaration.");}
 	;
@@ -189,13 +175,10 @@ object_decl : def_id_s ':' object_qualifier_opt object_subtype_def init_opt ';'
 	;
 
 def_id_s : def_id
-        {$$ = A_ExpList($1,NULL);}
 	| def_id_s ',' def_id
-	    {$$ = A_ExpList($3,$1);}
 	;
 
 def_id  : IDENTIFIER
-        {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 object_qualifier_opt :
@@ -209,9 +192,7 @@ object_subtype_def : subtype_ind
 	;
 
 init_opt :
-        {$$ = A_NilExp(EM_tokPos);}
 	| IS_ASSIGNED expression
-	    {$$ = $2;}
 	;
 
 number_decl : def_id_s ':' CONSTANT IS_ASSIGNED expression ';'
@@ -230,21 +211,13 @@ type_completion :
 	;
 
 type_def : enumeration_type
-        {$$ = $1;} 
 	| integer_type
-	    {$$ = $1;}
 	| real_type
-	    {$$ = $1;}
 	| array_type
-	    {$$ = $1;}
 	| record_type
-	    {$$ = $1;}
 	| access_type
-	    {$$ = A_NotImplemented(EM_tokPos,"access type not implemented");}
 	| derived_type
-	    {$$ = A_NotImplemented(EM_tokPos,"derived type not implemented");}
 	| private_type
-	    {$$ = A_NotImplemented(EM_tokPos,"private type not implemented");}
 	;
 
 subtype_decl : SUBTYPE IDENTIFIER IS subtype_ind ';'
@@ -282,7 +255,6 @@ range : simple_expression DOT_DOT simple_expression
 	;
 
 enumeration_type : '(' enum_id_s ')'
-        {$$ = A_EnumExp(EM_tokPos,$2);}
 
 enum_id_s : enum_id
         {$$ = A_ExpList($1,NULL);}
@@ -297,12 +269,9 @@ enum_id : IDENTIFIER
 	;
 
 integer_type : range_spec
-        {$$ = A_IntdefExp(EM_tokPos,$1);}
 	| MOD expression
-	    {$$ = A_IntdefExp(EM_tokPos,$2);}
 	;
 	
-
 range_spec : range_constraint
         {$$ = $1;}
 	;
@@ -314,33 +283,24 @@ range_spec_opt :
 	;
 
 real_type : float_type
-        {$$ = $1;}
 	| fixed_type
-	    {$$ = $1;}
 	;
 
 float_type : DIGITS expression range_spec_opt
-        {$$ = A_FloatdefExp(EM_tokPos,$2,$3);}
 	;
 
 fixed_type : DELTA expression range_spec
-        {$$ = A_FixeddefExp(EM_tokPos,$2,$3);}
 	| DELTA expression DIGITS expression range_spec_opt
-	    {$$ = A_FixeddefdigitExp(EM_tokPos,$2,$4,$5);}
 	;
 
 array_type : unconstr_array_type
-        {$$ = $1;}
 	| constr_array_type
-	    {$$ = $1;}
 	;
 
 unconstr_array_type : ARRAY '(' index_s ')' OF component_subtype_def
-        {$$ = A_UnconarraydefExp(EM_tokPos,$3,$6);}
 	;
 
 constr_array_type : ARRAY iter_index_constraint OF component_subtype_def
-        {$$ = A_ConarraydefExp(EM_tokPos,$2,$4);}
 	;
 
 component_subtype_def : aliased_opt subtype_ind
@@ -382,13 +342,10 @@ range_constr_opt :
 	;
 
 record_type : tagged_opt limited_opt record_def
-        {$$ = $3;}
 	;
 
 record_def : RECORD pragma_s comp_list END RECORD
-        {$$ = A_RecorddefExp(EM_tokPos,$2,$3);}
 	| NuLL RECORD
-	    {$$ = A_NullrecorddefExp(EM_tokPos);}
 	;
 
 tagged_opt :
@@ -397,23 +354,16 @@ tagged_opt :
 	;
 
 comp_list : comp_decl_s variant_part_opt
-        {$$ = A_CompList1(EM_tokPos,$1,$2);}
 	| variant_part pragma_s
-	    {$$ = A_CompList2(EM_tokPos,$1,$2);}
 	| NuLL ';' pragma_s
-	    {$$ = A_CompList3(EM_tokPos,$3);}
 	;
 
 comp_decl_s : comp_decl
-        {$$ = A_CompDecl1(EM_tokPos,$1);}
 	| comp_decl_s pragma_s comp_decl
-	    {$$ = A_CompDecl2(EM_tokPos,$1,$2,$3);}
 	;
 
 variant_part_opt : pragma_s
-        {$$ = A_VariantPartOpt1(EM_tokPos,$1);}
 	| pragma_s variant_part pragma_s
-	    {$$ = A_VariantPartOpt2(EM_tokPos,$1,$2,$3);}
 	;
 
 comp_decl : def_id_s ':' component_subtype_def init_opt ';'
@@ -437,21 +387,17 @@ access_opt :
 	;
 
 variant_part : CASE simple_name IS pragma_s variant_s END CASE ';'
-        {$$ = A_VariantPart($2,$4,$5);}
 	;
 
 variant_s : variant
-        {$$ = A_ExpList($1,NULL);}
 	| variant_s variant
-	    {$$ = A_ExpList($2,$1);}
 	;
 
 variant : WHEN choice_s RIGHT_SHAFT pragma_s comp_list
-        {$$ = A_Variant(EM_tokPos,$2,$4,$5);}
 	;
 
 choice_s : choice
-        {$$ = A_ExpList($1,NULL);}
+	    {$$ = A_ExpList($1,NULL);}
 	| choice_s '|' choice
 	    {$$ = A_ExpList($3,$1);}
 	;
@@ -542,7 +488,7 @@ compound_name : simple_name
 
 c_name_list : compound_name
         { $$ = A_ExpList($1,NULL);}
-	 | c_name_list ',' compound_name
+	| c_name_list ',' compound_name
 	    { $$ = A_ExpList($3,$1);}
 	;
 
@@ -586,9 +532,12 @@ attribute_id : IDENTIFIER
 	| ACCESS
 	;
 
-literal : NUMBER
+literal : NUMBER 
+	    {$$ = A_IntExp(EM_tokPos,$1);}
 	| used_char
+	    {$$ = $1;}
 	| NuLL
+	    {$$ = A_NilExp(EM_tokPos);}
 	;
 
 aggregate : '(' comp_assoc ')'
@@ -718,6 +667,7 @@ primary : literal
 	;
 
 parenthesized_primary : aggregate
+		{$$ = A_NotImplemented(EM_tokPos,"aggregate not implemented");}
 	| '(' expression ')'
 	    {$$ = $2;}
 	;
@@ -726,8 +676,10 @@ qualified : name TICK parenthesized_primary
         {$$ = A_OpExp(EM_tokPos,A_tickOp,$1,$3);}
 	;
 
-allocator : NEW name
+allocator : NEW name 
+	    {$$ = $2;}
 	| NEW qualified
+	    {$$ = $2;}
 	;
 
 statement_s : statement
@@ -785,9 +737,9 @@ compound_stmt : if_stmt
 	| block
 	    {$$ = $1;}
 	| accept_stmt
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"accept stmt not implemented");}
 	| select_stmt
-	    {$$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"select stmt not implemented");}
 	;
 
 label : LT_LT IDENTIFIER GT_GT
@@ -847,29 +799,41 @@ alternative : WHEN choice_s RIGHT_SHAFT statement_s
 	;
 
 loop_stmt : label_opt iteration basic_loop id_opt ';'
+		{$$ = A_LoopExp(EM_tokPos,$1,$2,$3,$4);}
 	;
 
 label_opt :
+		{$$ = A_NilExp(EM_tokPos);}
 	| IDENTIFIER ':'
+		{$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 iteration :
+	    {$$ = A_NilExp(EM_tokPos);}
 	| WHILE condition
+	    {$$ = A_WhileExp(EM_tokPos,$2);}
 	| iter_part reverse_opt discrete_range
+	    {$$ = A_ForExp(EM_tokPos,$1,$2,$3);}
 	;
 
 iter_part : FOR IDENTIFIER IN
+	    {$$ = A_StringExp(EM_tokPos,$2);}
 	;
 
 reverse_opt :
+	    {$$ = A_NilExp(EM_tokPos);}
 	| REVERSE
+	    {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 basic_loop : LOOP statement_s END LOOP
+	    {$$ = $2;}
 	;
 
 id_opt :
+		{$$ = A_NilExp(EM_tokPos);}
 	| designator
+		{$$ = $1;}
 	;
 
 block : label_opt block_decl block_body END id_opt ';'
@@ -926,7 +890,9 @@ subprog_spec : PROCEDURE compound_name formal_part_opt
 	;
 
 designator : compound_name
+		{$$ = $1;}
 	| STRING
+		{$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 formal_part_opt : 
@@ -954,8 +920,8 @@ mode :
 subprog_spec_is_push : subprog_spec IS
 	;
 
-subprog_body : subprog_spec_is_push
-	       decl_part block_body END id_opt ';'
+subprog_body : subprog_spec_is_push decl_part block_body END id_opt ';'
+	    {$$ = A_NotImplemented(EM_tokPos,"subprog body not implemented");}
 	;
 
 procedure_call : name ';'
@@ -978,7 +944,7 @@ c_id_opt :
 	;
 
 pkg_body : PACKAGE BODY compound_name IS
-	       decl_part body_opt END c_id_opt ';'
+	       decl_part body_opt END c_id_opt ';' 
 	;
 
 body_opt :
@@ -1164,6 +1130,7 @@ abort_stmt : ABORT name_s ';'
 	;
 
 compilation :
+	    { $$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| compilation comp_unit
 	    { $$ = A_ExpList($2,$1);}
 	| pragma pragma_s
@@ -1171,6 +1138,7 @@ compilation :
 	;
 
 comp_unit : context_spec private_opt unit pragma_s
+	    { $$ = $3;}
 	| private_opt unit pragma_s
 	    { $$ = $2;}
 	;
@@ -1192,23 +1160,22 @@ use_clause_opt :
 	;
 
 unit : pkg_decl
-        { $$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"pkg decl not implemented");}
 	| pkg_body
-	    { $$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"pkg body not implemented");}
 	| subprog_decl
-	    { $$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"can not declare subprog here");}
 	| subprog_body
-	    { $$ = $1;}
+	    {$$ = $1;}
 	| subunit
-	    { $$ = $1;}
+	    { $$ = A_NotImplemented(EM_tokPos,"subunit not implemented");}
 	| generic_decl
-	    { $$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"generic decl not implemented");}
 	| rename_unit
-	    { $$ = $1;}
+	    {$$ = A_NotImplemented(EM_tokPos,"rename unit not implemented");}
 	;
 
-subunit : SEPARATE '(' compound_name ')'
-	      subunit_body
+subunit : SEPARATE '(' compound_name ')' subunit_body
 	;
 
 subunit_body : subprog_body
@@ -1243,6 +1210,7 @@ except_choice : name
 	;
 
 raise_stmt : RAISE name_opt ';'
+		{$$ = A_RaiseExp(EM_tokPos,$2);}
 	;
 
 requeue_stmt : REQUEUE name ';'
