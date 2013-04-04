@@ -215,7 +215,7 @@ A_exp A_GotoExp(A_pos pos, A_exp gotolabel)
  p->u.gotolabel=gotolabel;
  return p;
 }
-
+/*
 A_exp A_EnumExp(A_pos pos, A_expList enumids)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_enumExp;
@@ -284,7 +284,7 @@ A_exp A_NullrecorddefExp(A_pos pos)
  p->pos=pos;
  return p;
 }
-
+*/
 A_exp A_Pragma(A_pos pos, string pragmaname)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_pragma;
@@ -301,7 +301,7 @@ A_exp A_Pragmalist(A_pos pos, A_exp name, A_expList pragmaargs)
  p->u.pragmalist.pragmaargs=pragmaargs;
  return p;
 }
-
+/*
 A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_recorddefExp;
@@ -310,7 +310,7 @@ A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist)
  p->u.recorddef.complist=complist;
  return p;
 }
-
+*/
 A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_alternative;
@@ -335,6 +335,14 @@ A_exp A_RaiseExp(A_pos pos, A_exp nameopt)
  p->kind=A_raiseExp;
  p->pos=pos;
  p->u.nameopt=nameopt;
+ return p;
+}
+
+A_exp A_Procedure(A_pos pos, A_exp procedurename)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_procedure;
+ p->pos=pos;
+ p->u.procedurename=procedurename;
  return p;
 }
 

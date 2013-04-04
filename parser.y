@@ -5,10 +5,11 @@
 #include "errormsg.h"
 #include "symbol.h"
 #include "absyn.h"
+#include "prabsyn.h"
 
 int yylex(void); /* function prototype */
 
-A_expList absyn_root;
+A_exp absyn_root;
 
 void yyerror(char *s)
 {
@@ -31,7 +32,7 @@ void yyerror(char *s)
 %type <expList> statement_s goal_symbol compilation c_name_list
                 cond_clause_s else_opt enum_id_s index_s iter_index_constraint
                 iter_discrete_range_s choice_s alternative_s pragma_arg_s pragma_s
-                basic_loop
+                basic_loop handled_stmt_s block_body
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary 
             statement simple_stmt compound_stmt unlabeled null_stmt condition
@@ -43,7 +44,7 @@ void yyerror(char *s)
             name_opt operator_symbol selected_comp used_char enum_id 
             range_spec range_spec_opt index component_subtype_def
             discrete_range choice discrete_with_range alternative iter_part 
-            iteration reverse_opt designator id_opt label_opt
+            iteration reverse_opt designator id_opt label_opt procedure_call
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 /*******************************************************************************
@@ -128,7 +129,7 @@ void yyerror(char *s)
 %%
 
 goal_symbol : compilation
-        {absyn_root = $1;}
+        {absyn_root = A_SeqExp(EM_tokPos,$1);}
 	;
 
 pragma  : PRAGMA IDENTIFIER ';'
@@ -713,7 +714,7 @@ simple_stmt : null_stmt
 	| goto_stmt
 	    {$$ = $1;}
 	| procedure_call
-	    {$$ = A_NotImplemented(EM_tokPos,"procedure not implemented");}
+	    {$$ = $1;}
 	| delay_stmt
 	    {$$ = A_NotImplemented(EM_tokPos,"delay not implemented");}
 	| abort_stmt
@@ -844,9 +845,11 @@ block_decl :
 	;
 
 block_body : BegiN handled_stmt_s
+        {$$ = $2;}
 	;
 
 handled_stmt_s : statement_s except_handler_part_opt 
+        {$$ = $1;}
 	; 
 
 except_handler_part_opt :
@@ -921,10 +924,11 @@ subprog_spec_is_push : subprog_spec IS
 	;
 
 subprog_body : subprog_spec_is_push decl_part block_body END id_opt ';'
-	    {$$ = A_NotImplemented(EM_tokPos,"subprog body not implemented");}
+	    {$$ = A_SeqExp(EM_tokPos,$3);}
 	;
 
 procedure_call : name ';'
+        {$$ = A_Procedure(EM_tokPos,$1);}
 	;
 
 pkg_decl : pkg_spec ';'
@@ -1301,5 +1305,6 @@ code_stmt : qualified ';'
 
 main() {
         yyparse();
+        pr_exp(stdout,absyn_root,1);
         return 0;
 }

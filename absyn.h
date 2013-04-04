@@ -53,7 +53,8 @@ struct A_exp_
 	       A_letExp, A_arrayExp, A_returnExp, A_gotoExp, A_enumExp, A_intdefExp,
 	       A_floatdefExp, A_fixeddefExp, A_fixeddefdigitExp, A_unconarraydefExp,
 	       A_conarraydefExp, A_nullrecorddefExp, A_recorddefExp, A_pragma,
-	       A_pragmalist, A_alternative, A_caseExp, A_raiseExp, A_notImplemented} kind;
+	       A_pragmalist, A_alternative, A_caseExp, A_raiseExp, A_procedure, 
+	       A_notImplemented} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -90,6 +91,7 @@ struct A_exp_
   	      struct {A_expList choices, stmts;} alternative;
   	      struct {A_exp header; A_expList pragmas, alternatives;} caseexp;
   	      A_exp nameopt;
+  	      A_exp procedurename;
 	      string msg;
 	    } u;
      };
@@ -169,6 +171,7 @@ A_exp A_Pragmalist(A_pos pos, A_exp name, A_expList pragmaargs);
 A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts);
 A_exp A_Case(A_pos pos, A_exp header, A_expList pragmas, A_expList alternatives);
 A_exp A_RaiseExp(A_pos pos, A_exp nameopt);
+A_exp A_Procedure(A_pos pos, A_exp procedurename);
 A_exp A_NotImplemented(A_pos pos, string msg);
 A_dec A_FunctionDec(A_pos pos, A_fundecList function);
 A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
