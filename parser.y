@@ -32,7 +32,8 @@ void yyerror(char *s)
 %type <expList> statement_s goal_symbol compilation c_name_list
                 cond_clause_s else_opt enum_id_s index_s iter_index_constraint
                 iter_discrete_range_s choice_s alternative_s pragma_arg_s pragma_s
-                basic_loop handled_stmt_s block_body
+                basic_loop handled_stmt_s block_body value_s context_spec with_clause
+                name_s use_clause_opt
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary 
             statement simple_stmt compound_stmt unlabeled null_stmt condition
@@ -45,6 +46,7 @@ void yyerror(char *s)
             range_spec range_spec_opt index component_subtype_def
             discrete_range choice discrete_with_range alternative iter_part 
             iteration reverse_opt designator id_opt label_opt procedure_call
+            indexed_comp value comp_assoc private_opt use_clause
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 /*******************************************************************************
@@ -54,7 +56,7 @@ void yyerror(char *s)
 *******************************************************************************/
 %token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
 %token <unaryop> NOT ABS
-%token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE
+%token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE PRIVATE TYPE
 %token <ival> NUMBER
 
 %token LT_LT
@@ -100,7 +102,6 @@ void yyerror(char *s)
 %token OUT
 %token PACKAGE
 %token PRAGMA
-%token PRIVATE
 %token PROCEDURE
 %token PROTECTED
 %token RAISE
@@ -116,7 +117,6 @@ void yyerror(char *s)
 %token TASK
 %token TERMINATE
 %token THEN
-%token TYPE
 %token UNTIL
 %token USE
 %token WHEN
@@ -463,7 +463,7 @@ body : subprog_body
 name : simple_name
         {$$ = $1;}
 	| indexed_comp
-	    {$$ = A_NotImplemented(EM_tokPos,"indexed name not implemented");}
+	    {$$ = $1;}
 	| selected_comp 
 	    {$$ = $1;}   
 	| attribute
@@ -502,16 +502,23 @@ operator_symbol : STRING
 	;
 
 indexed_comp : name '(' value_s ')'
+		{$$ = A_FunctionUse(EM_tokPos,$1,$3);}
 	;
 
 value_s : value
+	{$$ = A_ExpList($1,NULL);}
 	| value_s ',' value
+	{$$ = A_ExpList($3,$1);}
 	;
 
 value : expression
+	{$$ = $1;}
 	| comp_assoc
+	{$$ = $1;}
 	| discrete_with_range
+	{$$ = $1;}
 	| error
+	{EM_error(EM_tokPos,"Error in statement.");}
 	;
 
 selected_comp : name '.' simple_name
@@ -553,6 +560,7 @@ value_s_2 : value ',' value
 	;
 
 comp_assoc : choice_s RIGHT_SHAFT expression
+	{$$ = A_CompAssoc(EM_tokPos,$1,$3);}
 	;
 
 expression : relation
@@ -963,11 +971,15 @@ limited_opt :
 	;
 
 use_clause : USE name_s ';'
+	{$$ = A_Useclause(EM_tokPos,A_NilExp(EM_tokPos),$2);}
 	| USE TYPE name_s ';'
+	{$$ = A_Useclause(EM_tokPos,A_StringExp(EM_tokPos,$2),$3);}
 	;
 
 name_s : name
+	{$$ = A_ExpList($1,NULL);}
 	| name_s ',' name
+	{$$ = A_ExpList($3,$1);}
 	;
 
 rename_decl : def_id_s ':' object_qualifier_opt subtype_ind renames ';'
@@ -1142,25 +1154,33 @@ compilation :
 	;
 
 comp_unit : context_spec private_opt unit pragma_s
-	    { $$ = $3;}
+	    { $$ = A_CompUnit(EM_tokPos,$1, $2, $3, $4);}
 	| private_opt unit pragma_s
-	    { $$ = $2;}
+	    { $$ = A_CompUnit(EM_tokPos, A_ExpList(A_NilExp(EM_tokPos),NULL), $1, $2, $3);}
 	;
 
 private_opt :
+ 	{$$ = A_NilExp(EM_tokPos);}
 	| PRIVATE
+	{$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 context_spec : with_clause use_clause_opt
+	{$$ = A_ExpList(A_ContextSpecwith(EM_tokPos,$1,$2),NULL);}
 	| context_spec with_clause use_clause_opt
+	{$$ = A_ExpList(A_ContextSpecwith(EM_tokPos,$2,$3),$1);}
 	| context_spec pragma
+	{$$ = A_ExpList($2, $1);}
 	;
 
 with_clause : WITH c_name_list ';'
+		{$$ = $2;}
 	;
 
 use_clause_opt :
+	{$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| use_clause_opt use_clause
+	{$$ = A_ExpList($2,$1);}
 	;
 
 unit : pkg_decl

@@ -54,7 +54,8 @@ struct A_exp_
 	       A_floatdefExp, A_fixeddefExp, A_fixeddefdigitExp, A_unconarraydefExp,
 	       A_conarraydefExp, A_nullrecorddefExp, A_recorddefExp, A_pragma,
 	       A_pragmalist, A_alternative, A_caseExp, A_raiseExp, A_procedure, 
-	       A_notImplemented} kind;
+	       A_notImplemented, A_functionUse, A_compAssoc, A_compUnit, A_useclause,
+	       A_contextSpecwith} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -92,6 +93,11 @@ struct A_exp_
   	      struct {A_exp header; A_expList pragmas, alternatives;} caseexp;
   	      A_exp nameopt;
   	      A_exp procedurename;
+  	      struct {A_exp name; A_expList value;} functionuse;
+  	      struct {A_expList choices; A_exp expression;} compassoc;
+  	      struct {A_exp privatee, unit; A_expList contextspec, pragmas;} compunit;
+  	      struct {A_expList names; A_exp type;} useclause;
+  	      struct {A_expList withclause, useclauseopt;} contextspecwith;
 	      string msg;
 	    } u;
      };
@@ -172,8 +178,12 @@ A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts);
 A_exp A_Case(A_pos pos, A_exp header, A_expList pragmas, A_expList alternatives);
 A_exp A_RaiseExp(A_pos pos, A_exp nameopt);
 A_exp A_Procedure(A_pos pos, A_exp procedurename);
+A_exp A_FunctionUse(A_pos pos, A_exp name, A_expList value);
+A_exp A_CompAssoc(A_pos pos, A_expList choices, A_exp expression);
+A_exp A_CompUnit(A_pos pos, A_expList contextspec, A_exp privatee, A_exp unit, A_expList pragmas);
+A_exp A_Useclause(A_pos pos, A_exp type, A_expList names);
+A_exp A_ContextSpecwith(A_pos pos, A_expList withclause, A_expList useclauseopt);
 A_exp A_NotImplemented(A_pos pos, string msg);
-A_dec A_FunctionDec(A_pos pos, A_fundecList function);
 A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
 A_dec A_TypeDec(A_pos pos, A_nametyList type);
 A_dec A_GlobalDec(A_pos pos);

@@ -346,6 +346,53 @@ A_exp A_Procedure(A_pos pos, A_exp procedurename)
  return p;
 }
 
+A_exp A_FunctionUse(A_pos pos, A_exp name, A_expList value)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_functionUse;
+ p->pos=pos;
+ p->u.functionuse.name=name;
+ p->u.functionuse.value=value;
+ return p;
+}
+
+A_exp A_CompAssoc(A_pos pos, A_expList choices, A_exp expression)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_compAssoc;
+ p->pos=pos;
+ p->u.compassoc.choices=choices;
+ p->u.compassoc.expression=expression;
+ return p;
+}
+
+A_exp A_CompUnit(A_pos pos, A_expList contextspec, A_exp privatee, A_exp unit, A_expList pragmas)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_compUnit;
+ p->pos=pos;
+ p->u.compunit.contextspec=contextspec;
+ p->u.compunit.privatee=privatee;
+ p->u.compunit.unit=unit;
+ p->u.compunit.pragmas=pragmas;
+ return p;
+}
+
+A_exp A_Useclause(A_pos pos, A_exp type, A_expList names)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_useclause;
+ p->pos=pos;
+ p->u.useclause.type=type;
+ p->u.useclause.names=names;
+ return p;
+}
+
+A_exp A_ContextSpecwith(A_pos pos, A_expList withclause, A_expList useclauseopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_contextSpecwith;
+ p->pos=pos;
+ p->u.contextspecwith.withclause=withclause;
+ p->u.contextspecwith.useclauseopt=useclauseopt;
+ return p;
+}
+
 A_exp A_NotImplemented(A_pos pos, string msg)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_notImplemented;

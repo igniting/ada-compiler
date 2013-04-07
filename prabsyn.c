@@ -194,6 +194,33 @@ void pr_exp(FILE *out, A_exp v, int d) {
    fprintf(out, "procedure(\n");
    pr_exp(out, v->u.procedurename, d+1); fprintf(out, ")\n");
    break;
+ case A_functionUse:
+   fprintf(out, "functionUse(\n");
+   pr_exp(out, v->u.functionuse.name, d+1); fprintf(out, ",\n");
+   pr_expList(out, v->u.functionuse.value, d+1); fprintf(out, ")\n");
+   break;
+ case A_compAssoc:
+   fprintf(out, "compAssoc(\n");
+   pr_expList(out, v->u.compassoc.choices, d+1); fprintf(out, ",\n");
+   pr_exp(out, v->u.compassoc.expression, d+1); fprintf(out, ")\n");
+   break;
+ case A_compUnit:
+   fprintf(out, "compUnit(\n");
+   pr_expList(out, v->u.compunit.contextspec, d+1); fprintf(out, ",\n");
+   pr_exp(out, v->u.compunit.privatee, d+1); fprintf(out, ",\n");
+   pr_exp(out, v->u.compunit.unit, d+1); fprintf(out, ",\n");
+   pr_expList(out, v->u.compunit.pragmas, d+1); fprintf(out, ")\n");
+   break;
+ case A_useclause:
+   fprintf(out, "useclause(\n");
+   pr_exp(out, v->u.useclause.type, d+1); fprintf(out, ",\n");
+   pr_expList(out, v->u.useclause.names, d+1); fprintf(out, ")\n");
+   break;
+ case A_contextSpecwith:
+   fprintf(out, "contextspecwith(\n");
+   pr_expList(out, v->u.contextspecwith.withclause, d+1); fprintf(out, ",\n");
+   pr_expList(out, v->u.contextspecwith.useclauseopt, d+1); fprintf(out, ")\n");
+   break;
  case A_notImplemented:
    fprintf(out, "******* %s ******", v->u.msg);
    break;
