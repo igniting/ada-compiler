@@ -215,7 +215,7 @@ A_exp A_GotoExp(A_pos pos, A_exp gotolabel)
  p->u.gotolabel=gotolabel;
  return p;
 }
-/*
+
 A_exp A_EnumExp(A_pos pos, A_expList enumids)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_enumExp;
@@ -284,7 +284,7 @@ A_exp A_NullrecorddefExp(A_pos pos)
  p->pos=pos;
  return p;
 }
-*/
+
 A_exp A_Pragma(A_pos pos, string pragmaname)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_pragma;
@@ -301,7 +301,7 @@ A_exp A_Pragmalist(A_pos pos, A_exp name, A_expList pragmaargs)
  p->u.pragmalist.pragmaargs=pragmaargs;
  return p;
 }
-/*
+
 A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_recorddefExp;
@@ -310,7 +310,7 @@ A_exp A_RecorddefExp(A_pos pos, A_expList pragmas, A_exp complist)
  p->u.recorddef.complist=complist;
  return p;
 }
-*/
+
 A_exp A_Alternative(A_pos pos, A_expList choices, A_expList stmts)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_alternative;
@@ -393,6 +393,33 @@ A_exp A_ContextSpecwith(A_pos pos, A_expList withclause, A_expList useclauseopt)
  return p;
 }
 
+A_exp A_SubprogSpec(A_pos pos, A_exp name, A_expList formalpart)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_subprogSpec;
+ p->pos=pos;
+ p->u.subprogSpec.name=name;
+ p->u.subprogSpec.formalpart=formalpart;
+ return p;
+}
+
+A_exp A_NameConstr(A_pos pos, A_exp name, A_exp constraint)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_nameConstr;
+ p->pos=pos;
+ p->u.nameconstr.name=name;
+ p->u.nameconstr.constraint=constraint;
+ return p;
+}
+
+A_exp A_DecimalConstr(A_pos pos, A_exp expression, A_exp rangeopt)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_decimalConstr;
+ p->pos=pos;
+ p->u.decimalconstr.expression=expression;
+ p->u.decimalconstr.rangeopt=rangeopt;
+ return p;
+}
+
 A_exp A_NotImplemented(A_pos pos, string msg)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_notImplemented;
@@ -456,6 +483,33 @@ A_ty A_ArrayTy(A_pos pos, S_symbol array)
  p->kind=A_arrayTy;
  p->pos=pos;
  p->u.array=array;
+ return p;
+}
+
+A_ty A_ObjectTy(A_pos pos, string qualifier, A_exp subtype, A_exp init)
+{A_ty p = checked_malloc(sizeof(*p));
+ p->kind=A_objectTy;
+ p->pos=pos;
+ p->u.obj.qualifier=qualifier;
+ p->u.obj.subtype = subtype;
+ p->u.obj.init= init;
+ return p;
+}
+
+A_ty A_NumTy(A_pos pos, A_exp assignexp)
+{A_ty p = checked_malloc(sizeof(*p));
+ p->kind=A_numTy;
+ p->pos=pos;
+ p->u.assignexp=assignexp;
+ return p;
+}
+
+A_ty A_TypeDecTy(A_pos pos,A_expList discrimopt, A_exp typecomp)
+{A_ty p = checked_malloc(sizeof(*p));
+ p->kind=A_typeDecTy;
+ p->pos=pos;
+ p->u.typedec.discrimopt=discrimopt;
+ p->u.typedec.typecomp=typecomp;
  return p;
 }
 

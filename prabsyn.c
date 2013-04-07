@@ -221,6 +221,11 @@ void pr_exp(FILE *out, A_exp v, int d) {
    pr_expList(out, v->u.contextspecwith.withclause, d+1); fprintf(out, ",\n");
    pr_expList(out, v->u.contextspecwith.useclauseopt, d+1); fprintf(out, ")\n");
    break;
+ case A_subprogSpec:
+   fprintf(out, "subprogspec(\n");
+   pr_exp(out, v->u.subprogSpec.name, d+1); fprintf(out, ",\n");
+   pr_expList(out, v->u.subprogSpec.formalpart, d+1); fprintf(out, ")\n");
+   break;
  case A_notImplemented:
    fprintf(out, "******* %s ******", v->u.msg);
    break;

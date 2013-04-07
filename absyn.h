@@ -54,8 +54,9 @@ struct A_exp_
 	       A_floatdefExp, A_fixeddefExp, A_fixeddefdigitExp, A_unconarraydefExp,
 	       A_conarraydefExp, A_nullrecorddefExp, A_recorddefExp, A_pragma,
 	       A_pragmalist, A_alternative, A_caseExp, A_raiseExp, A_procedure, 
-	       A_notImplemented, A_functionUse, A_compAssoc, A_compUnit, A_useclause,
-	       A_contextSpecwith} kind;
+	       A_functionUse, A_compAssoc, A_compUnit, A_useclause,
+	       A_contextSpecwith, A_subprogSpec, A_nameConstr, A_decimalConstr,
+	       A_notImplemented} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -98,6 +99,9 @@ struct A_exp_
   	      struct {A_exp privatee, unit; A_expList contextspec, pragmas;} compunit;
   	      struct {A_expList names; A_exp type;} useclause;
   	      struct {A_expList withclause, useclauseopt;} contextspecwith;
+  	      struct {A_exp name; A_expList formalpart;} subprogSpec;
+  	      struct {A_exp name, constraint;} nameconstr;
+  	      struct {A_exp expression, rangeopt;} decimalconstr; 
 	      string msg;
 	    } u;
      };
@@ -113,11 +117,15 @@ struct A_dec_
 	  } u;
    };
 
-struct A_ty_ {enum {A_nameTy, A_recordTy, A_arrayTy} kind;
+struct A_ty_ {enum {A_nameTy, A_recordTy, A_arrayTy, A_objectTy, A_numTy, 
+                    A_typeDecTy} kind;
 	      A_pos pos;
 	      union {S_symbol name;
 		     A_fieldList record;
 		     S_symbol array;
+		     struct {string qualifier; A_exp subtype,init;} obj;
+		     struct {A_expList discrimopt; A_exp typecomp;} typedec;
+		     A_exp assignexp;
 		   } u;
 	    };
 
@@ -183,13 +191,18 @@ A_exp A_CompAssoc(A_pos pos, A_expList choices, A_exp expression);
 A_exp A_CompUnit(A_pos pos, A_expList contextspec, A_exp privatee, A_exp unit, A_expList pragmas);
 A_exp A_Useclause(A_pos pos, A_exp type, A_expList names);
 A_exp A_ContextSpecwith(A_pos pos, A_expList withclause, A_expList useclauseopt);
+A_exp A_SubprogSpec(A_pos pos, A_exp name, A_expList formalpart);
+A_exp A_NameConstr(A_pos pos, A_exp name, A_exp constraint);
+A_exp A_DecimalConstr(A_pos pos, A_exp expression, A_exp rangeopt);
 A_exp A_NotImplemented(A_pos pos, string msg);
 A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
-A_dec A_TypeDec(A_pos pos, A_nametyList type);
 A_dec A_GlobalDec(A_pos pos);
 A_ty A_NameTy(A_pos pos, S_symbol name);
 A_ty A_RecordTy(A_pos pos, A_fieldList record);
 A_ty A_ArrayTy(A_pos pos, S_symbol array);
+A_ty A_ObjectTy(A_pos pos, string qualifier, A_exp subtype, A_exp init);
+A_ty A_NumTy(A_pos pos, A_exp assignexp);
+A_ty A_TypeDecTy(A_pos pos,A_expList discrimopt, A_exp typecomp);
 A_field A_Field(A_pos pos, S_symbol name, S_symbol typ);
 A_fieldList A_FieldList(A_field head, A_fieldList tail);
 A_expList A_ExpList(A_exp head, A_expList tail);

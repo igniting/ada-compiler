@@ -5,7 +5,7 @@ y.tab.o: y.tab.c
 	cc -g -c y.tab.c
 
 y.tab.c: parser.y
-	yacc -vd parser.y
+	yacc --debug -vd parser.y
 
 y.tab.h: y.tab.c
 	echo "y.tab.h was created at the same time as y.tab.c"

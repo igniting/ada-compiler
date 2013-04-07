@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "util.h"
 #include "errormsg.h"
+#include "table.h"
 #include "symbol.h"
 #include "absyn.h"
 #include "prabsyn.h"
@@ -10,6 +11,10 @@
 int yylex(void); /* function prototype */
 
 A_exp absyn_root;
+
+int yydebug = 0;
+
+S_table table;
 
 void yyerror(char *s)
 {
@@ -33,7 +38,8 @@ void yyerror(char *s)
                 cond_clause_s else_opt enum_id_s index_s iter_index_constraint
                 iter_discrete_range_s choice_s alternative_s pragma_arg_s pragma_s
                 basic_loop handled_stmt_s block_body value_s context_spec with_clause
-                name_s use_clause_opt
+                name_s use_clause_opt formal_part formal_part_opt param_s def_id_s
+                discrim_part_opt discrim_spec_s discrim_part 
 %type <exp> expression relation simple_expression term factor primary
             literal name allocator qualified parenthesized_primary 
             statement simple_stmt compound_stmt unlabeled null_stmt condition
@@ -46,7 +52,11 @@ void yyerror(char *s)
             range_spec range_spec_opt index component_subtype_def
             discrete_range choice discrete_with_range alternative iter_part 
             iteration reverse_opt designator id_opt label_opt procedure_call
-            indexed_comp value comp_assoc private_opt use_clause
+            indexed_comp value comp_assoc private_opt use_clause subprog_spec
+            param def_id decimal_digits_constraint object_subtype_def constraint
+            init_opt unconstr_array_type constr_array_type array_type range_constr_opt
+            discrim_spec type_completion type_def enumeration_type integer_type
+            float_type real_type fixed_type record_def
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 /*******************************************************************************
@@ -54,6 +64,7 @@ void yyerror(char *s)
             pkg_decl task_decl prot_decl exception_decl rename_decl generic_decl
             body_stub
 *******************************************************************************/
+%type  <sval> object_qualifier_opt
 %token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
 %token <unaryop> NOT ABS
 %token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE PRIVATE TYPE
@@ -173,67 +184,135 @@ decl    : object_decl
 	;
 
 object_decl : def_id_s ':' object_qualifier_opt object_subtype_def init_opt ';'
+        {
+            A_expList e = $1;
+            while(e!=NULL)
+            {   
+                if(S_look(table,S_Symbol(e->head->u.stringg))!=NULL)
+                {
+                    EM_error(EM_tokPos,"Re-declaration of %s",e->head->u.stringg);
+                }
+                else
+                {
+                    S_enter(table,S_Symbol(e->head->u.stringg),A_ObjectTy(EM_tokPos,$3,$4,$5));
+                }
+                e = e->tail;
+            }
+        }
 	;
 
 def_id_s : def_id
+        {$$ = A_ExpList($1,NULL);}
 	| def_id_s ',' def_id
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 def_id  : IDENTIFIER
+        {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 object_qualifier_opt :
+        {$$ = String("");}
 	| ALIASED
+	    {$$ = String("ALIASED");}
 	| CONSTANT
+	    {$$ = String("CONSTANT");}
 	| ALIASED CONSTANT
+	    {$$ = String("ALIASED_CONSTANT");}
 	;
 
 object_subtype_def : subtype_ind
+        {$$ = $1;}
 	| array_type
+	    {$$ = $1;}
 	;
 
 init_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| IS_ASSIGNED expression
+	    {$$ = $2;}
 	;
 
 number_decl : def_id_s ':' CONSTANT IS_ASSIGNED expression ';'
+        {
+            A_expList e = $1;
+            while(e!=NULL)
+            {   
+                if(S_look(table,S_Symbol(e->head->u.stringg))!=NULL)
+                {
+                    EM_error(EM_tokPos,"Re-declaration of %s",e->head->u.stringg);
+                }
+                else
+                {
+                    S_enter(table,S_Symbol(e->head->u.stringg),A_NumTy(EM_tokPos,$5));
+                }
+                e = e->tail;
+            }
+        }
 	;
 
 type_decl : TYPE IDENTIFIER discrim_part_opt type_completion ';'
+        {
+            if(S_look(table,S_Symbol($2))!=NULL)
+            {
+                EM_error(EM_tokPos,"Re-declaration of %s",$2);
+            }
+            else
+            {
+                S_enter(table,S_Symbol($2),A_TypeDecTy(EM_tokPos,$3,$4));
+            }
+        }
 	;
 
 discrim_part_opt :
+        {$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);}
 	| discrim_part
+	    {$$ = $1;}
 	| '(' BOX ')'
+	    {$$ = A_ExpList(A_StringExp(EM_tokPos,"BOX"),NULL);}
 	;
 
 type_completion :
+        {$$ = A_NilExp(EM_tokPos);}
 	| IS type_def
+	    {$$ = $2;}
 	;
 
 type_def : enumeration_type
+        {$$ = $1;}
 	| integer_type
+	    {$$ = $1;}
 	| real_type
+	    {$$ = $1;}
 	| array_type
+	    {$$ = $1;}
 	| record_type
+	    {$$ = A_NotImplemented(EM_tokPos,"record type not implemented yet");}
 	| access_type
+	    {$$ = A_NotImplemented(EM_tokPos,"access type not implemented yet");}
 	| derived_type
+	    {$$ = A_NotImplemented(EM_tokPos,"derived type not implemented");}
 	| private_type
+	    {$$ = A_NotImplemented(EM_tokPos,"private type not implemented");}
 	;
 
 subtype_decl : SUBTYPE IDENTIFIER IS subtype_ind ';'
 	;
 
 subtype_ind : name constraint
+        {$$ = A_NameConstr(EM_tokPos,$1,$2);}
 	| name
 	    {$$ = $1;}
 	;
 
 constraint : range_constraint
+        {$$ = $1;}
 	| decimal_digits_constraint
+	    {$$ = $1;}
 	;
 
 decimal_digits_constraint : DIGITS expression range_constr_opt
+                            {$$ = A_DecimalConstr(EM_tokPos,$2,$3);}
 	;
 
 derived_type : NEW subtype_ind
@@ -256,6 +335,7 @@ range : simple_expression DOT_DOT simple_expression
 	;
 
 enumeration_type : '(' enum_id_s ')'
+        {$$ = A_EnumExp(EM_tokPos,$2);}
 
 enum_id_s : enum_id
         {$$ = A_ExpList($1,NULL);}
@@ -270,7 +350,9 @@ enum_id : IDENTIFIER
 	;
 
 integer_type : range_spec
+        {$$ = A_IntdefExp(EM_tokPos,$1);}
 	| MOD expression
+	    {$$ = A_IntdefExp(EM_tokPos,$2);}
 	;
 	
 range_spec : range_constraint
@@ -284,24 +366,33 @@ range_spec_opt :
 	;
 
 real_type : float_type
+        {$$ = $1;}
 	| fixed_type
+	    {$$ = $1;}
 	;
 
 float_type : DIGITS expression range_spec_opt
+        {$$ = A_FloatdefExp(EM_tokPos,$2,$3);}
 	;
 
 fixed_type : DELTA expression range_spec
+        {$$ = A_FixeddefExp(EM_tokPos,$2,$3);}
 	| DELTA expression DIGITS expression range_spec_opt
+	    {$$ = A_FixeddefdigitExp(EM_tokPos,$2,$4,$5);}
 	;
 
 array_type : unconstr_array_type
+        {$$ = $1;}
 	| constr_array_type
+	    {$$ = $1;}
 	;
 
 unconstr_array_type : ARRAY '(' index_s ')' OF component_subtype_def
+        {$$ = A_UnconarraydefExp(EM_tokPos,$3,$6);}
 	;
 
 constr_array_type : ARRAY iter_index_constraint OF component_subtype_def
+        {$$ = A_ConarraydefExp(EM_tokPos,$2,$4);}
 	;
 
 component_subtype_def : aliased_opt subtype_ind
@@ -339,14 +430,18 @@ discrete_range : name range_constr_opt
 	;
 
 range_constr_opt :
+        {$$ = A_NilExp(EM_tokPos);}
 	| range_constraint
+	    {$$ = $1;}
 	;
 
 record_type : tagged_opt limited_opt record_def
 	;
 
 record_def : RECORD pragma_s comp_list END RECORD
+        {$$ = A_RecorddefExp(EM_tokPos,$2,A_NotImplemented(EM_tokPos,"comp list not implemented"));}
 	| NuLL RECORD
+	    {$$ = A_NullrecorddefExp(EM_tokPos);}
 	;
 
 tagged_opt :
@@ -373,14 +468,19 @@ comp_decl : def_id_s ':' component_subtype_def init_opt ';'
 	;
 
 discrim_part : '(' discrim_spec_s ')'
+        {$$ = $2;}
 	;
 
 discrim_spec_s : discrim_spec
+        {$$ = A_ExpList($1,NULL);}
 	| discrim_spec_s ';' discrim_spec
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 discrim_spec : def_id_s ':' access_opt mark init_opt
+        {$$ = A_NotImplemented(EM_tokPos,"discrim_spec not implemented");}
 	| error
+	    {EM_error(EM_tokPos,"Error in discrim_spec");}
 	;
 
 access_opt :
@@ -845,7 +945,20 @@ id_opt :
 		{$$ = $1;}
 	;
 
-block : label_opt block_decl block_body END id_opt ';'
+block : label_opt
+        {S_beginScope(table);S_enter(table,S_Symbol($1->u.stringg),$1);} 
+        block_decl
+        block_body END
+        id_opt
+        {
+            if($1->kind == A_stringExp)
+            {
+                if(S_look(table,S_Symbol($6->u.stringg)) == NULL)
+                    EM_error(EM_tokPos,"Wrong block id");
+            }
+        }
+        ';'
+        {S_endScope(table);}
 	;
 
 block_decl :
@@ -896,8 +1009,11 @@ subprog_decl : subprog_spec ';'
 	;
 
 subprog_spec : PROCEDURE compound_name formal_part_opt
+        {$$ = A_SubprogSpec(EM_tokPos,$2,$3);}
 	| FUNCTION designator formal_part_opt RETURN name
+	    {$$ = A_NotImplemented(EM_tokPos,"functions not implemented");}
 	| FUNCTION designator  /* for generic inst and generic rename */
+	    {$$ = A_NotImplemented(EM_tokPos,"functions not implemented");}
 	;
 
 designator : compound_name
@@ -906,19 +1022,26 @@ designator : compound_name
 		{$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
-formal_part_opt : 
+formal_part_opt :
+        {$$ = A_ExpList(A_NilExp(EM_tokPos),NULL);} 
 	| formal_part
+	    {$$ = $1;}
 	;
 
 formal_part : '(' param_s ')'
+        {$$ = $2;}
 	;
 
 param_s : param
+        {$$ = A_ExpList($1,NULL);}
 	| param_s ';' param
+	    {$$ = A_ExpList($3,$1);}
 	;
 
 param : def_id_s ':' mode mark init_opt
+        {$$ = A_NotImplemented(EM_tokPos,"param not implemented");}
 	| error
+	    {EM_error(EM_tokPos,"Error in parsing param");}
 	;
 
 mode :
@@ -1324,7 +1447,8 @@ code_stmt : qualified ';'
 %%
 
 main() {
+        table = S_empty();
         yyparse();
-        pr_exp(stdout,absyn_root,1);
+        //pr_exp(stdout,absyn_root,1);
         return 0;
 }
