@@ -1,5 +1,5 @@
-final: y.tab.o lex.yy.o errormsg.o util.o absyn.o symbol.o table.o prabsyn.o
-	cc -g y.tab.o lex.yy.o errormsg.o util.o absyn.o symbol.o table.o prabsyn.o -o final
+final: y.tab.o lex.yy.o errormsg.o util.o absyn.o symbol.o table.o prabsyn.o type.o
+	cc -g y.tab.o lex.yy.o errormsg.o util.o absyn.o symbol.o table.o prabsyn.o type.o -o final
 
 y.tab.o: y.tab.c
 	cc -g -c y.tab.c
@@ -33,6 +33,9 @@ symbol.o: symbol.c symbol.h
 
 table.o: table.c table.h
 	cc -g -c table.c
-		
+
+type.o: type.c type.h
+	cc -g -c type.c
+			
 clean: 
 	rm -f final *.o lex.yy.c y.tab.c y.tab.h y.output

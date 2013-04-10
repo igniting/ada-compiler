@@ -12,7 +12,7 @@ int yylex(void); /* function prototype */
 
 A_exp absyn_root;
 
-int yydebug = 0;
+int yydebug = 1;
 
 S_table table;
 
@@ -208,7 +208,7 @@ def_id_s : def_id
 	;
 
 def_id  : IDENTIFIER
-        {$$ = A_StringExp(EM_tokPos,$1);}
+        {$$ = A_IdentExp(EM_tokPos,S_Symbol($1));}
 	;
 
 object_qualifier_opt :

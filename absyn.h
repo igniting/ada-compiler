@@ -56,7 +56,7 @@ struct A_exp_
 	       A_pragmalist, A_alternative, A_caseExp, A_raiseExp, A_procedure, 
 	       A_functionUse, A_compAssoc, A_compUnit, A_useclause,
 	       A_contextSpecwith, A_subprogSpec, A_nameConstr, A_decimalConstr,
-	       A_notImplemented} kind;
+	       A_identExp, A_notImplemented} kind;
        A_pos pos;
        union {A_var var;
 	      /* nil; - needs only the pos */
@@ -102,6 +102,7 @@ struct A_exp_
   	      struct {A_exp name; A_expList formalpart;} subprogSpec;
   	      struct {A_exp name, constraint;} nameconstr;
   	      struct {A_exp expression, rangeopt;} decimalconstr; 
+  	      S_symbol ident;
 	      string msg;
 	    } u;
      };
@@ -124,8 +125,8 @@ struct A_ty_ {enum {A_nameTy, A_recordTy, A_arrayTy, A_objectTy, A_numTy,
 		     A_fieldList record;
 		     S_symbol array;
 		     struct {string qualifier; A_exp subtype,init;} obj;
-		     struct {A_expList discrimopt; A_exp typecomp;} typedec;
 		     A_exp assignexp;
+		     struct {A_expList discrimopt; A_exp typecomp;} typedec;
 		   } u;
 	    };
 
@@ -194,6 +195,7 @@ A_exp A_ContextSpecwith(A_pos pos, A_expList withclause, A_expList useclauseopt)
 A_exp A_SubprogSpec(A_pos pos, A_exp name, A_expList formalpart);
 A_exp A_NameConstr(A_pos pos, A_exp name, A_exp constraint);
 A_exp A_DecimalConstr(A_pos pos, A_exp expression, A_exp rangeopt);
+A_exp A_IdentExp(A_pos pos, S_symbol ident);
 A_exp A_NotImplemented(A_pos pos, string msg);
 A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
 A_dec A_GlobalDec(A_pos pos);

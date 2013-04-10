@@ -428,6 +428,13 @@ A_exp A_NotImplemented(A_pos pos, string msg)
  return p;
 }
 
+A_exp A_IdentExp(A_pos pos, S_symbol ident)
+{A_exp p = checked_malloc(sizeof(*p));
+ p->kind=A_identExp;
+ p->pos=pos;
+ p->u.ident=ident;
+ return p;
+}
 A_dec A_FunctionDec(A_pos pos, A_fundecList function)
 {A_dec p = checked_malloc(sizeof(*p));
  p->kind=A_functionDec;
