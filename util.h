@@ -8,4 +8,4 @@ typedef char bool;
 
 void *checked_malloc(int);
 string String(char *);
-
+string toStrUpper(string);

@@ -63,18 +63,26 @@ static void pr_unoper( A_unaryOper d) {
 }
 */
 
-S_symbol T_typeCheckExp(S_table table, A_exp v) {
+
+void T_typeCheckExp(S_table table, A_exp v) {
  A_ty type;
+ S_symbol T_int = S_Symbol("INTEGER");
+ S_symbol T_float = S_Symbol("FLOAT");
  switch (v->kind) {
  case A_varExp:
+   //Not used
    break;
  case A_nilExp:
+   //Nothing here
    break;
  case A_intExp:
+   //Not used
    break;
  case A_stringExp:
+   //Nothing here
    break;
  case A_callExp:
+   //Not used
    break;
  case A_opExp:
    switch(v->u.op.oper) {
@@ -91,9 +99,15 @@ S_symbol T_typeCheckExp(S_table table, A_exp v) {
    case A_binAndOp:
    case A_modOp:
    case A_remOp:
-        if(T_typeCheckExp(table,v->u.op.left) != T_typeCheckExp(table,v->u.op.right))
-            EM_error(v->pos,"Type Error!");
-        break;
+        if(v->u.op.left->dec_type == T_int && v->u.op.right->dec_type == T_int)
+            v->dec_type = T_int;
+        else if(v->u.op.left->dec_type == T_float && v->u.op.right->dec_type == T_float)
+            v->dec_type = T_float;
+        else
+        {
+            EM_error(v->pos,"Invalid type");
+            break;
+        }
    case A_tickOp:
    case A_andOp:
    case A_orOp:
@@ -107,34 +121,57 @@ S_symbol T_typeCheckExp(S_table table, A_exp v) {
    }
    break;
  case A_unaryOpExp:
+   //Do later
    break;
  case A_recordExp:
+   //Not Used
    break;
  case A_seqExp:
+   T_typeCheckExpList(table,v->u.seq);
    break;
  case A_assignExp:
+   //Not used
    break;
  case A_ifExp:
+   T_typeCheckExpList(table,v->u.iff.cond_clauses);
+   T_typeCheckExpList(table,v->u.iff.elsee);
    break;
  case A_whileExp:
+   T_typeCheckExp(table,v->u.whilee.test);
    break;
  case A_forExp:
+   T_typeCheckExp(table,v->u.forr.var);
+   T_typeCheckExp(table,v->u.forr.reverse);
+   T_typeCheckExp(table,v->u.forr.range);
    break;
  case A_loopExp:
+   T_typeCheckExp(table,v->u.loop.labelopt);
+   T_typeCheckExp(table,v->u.loop.iteration);
+   T_typeCheckExpList(table,v->u.loop.basicloop);
+   T_typeCheckExp(table,v->u.loop.idopt);
    break;
  case A_condExp:
+   T_typeCheckExp(table,v->u.cond.test);
+   T_typeCheckExpList(table,v->u.cond.stmts);
    break;
  case A_breakExp:
+   //Nothing here
    break;
  case A_exitExp:
+   T_typeCheckExp(table,v->u.exit.exitname);
+   T_typeCheckExp(table,v->u.exit.exitcondition);
    break;
  case A_letExp:
+   //Not used
    break;
  case A_arrayExp:
+   //Not used
    break;
  case A_returnExp:
+   T_typeCheckExp(table,v->u.retval);
    break;
  case A_gotoExp:
+   T_typeCheckExp(table,v->u.gotolabel);
    break;
  case A_pragma:
    break;
@@ -160,12 +197,6 @@ S_symbol T_typeCheckExp(S_table table, A_exp v) {
    break;
  case A_subprogSpec:
    break;
- case A_identExp:
-   type = S_look(table,v->u.ident);
-   switch(type->kind) {
-    case A_numTy: return S_Symbol("INT"); break;
-    default: break;
-   }
  case A_notImplemented:
    break;
  default:
@@ -173,6 +204,15 @@ S_symbol T_typeCheckExp(S_table table, A_exp v) {
  } 
 }
 
+void T_typeCheckExpList(S_table table, A_expList l)
+{
+   A_expList e = l;
+   while(e!=NULL)
+   {
+    T_typeCheckExp(table,e->head);
+    e = e -> tail;
+   }
+}
 /*
 static void pr_dec( A_dec v) {
  indent(out, d);

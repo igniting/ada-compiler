@@ -58,6 +58,7 @@ struct A_exp_
 	       A_contextSpecwith, A_subprogSpec, A_nameConstr, A_decimalConstr,
 	       A_identExp, A_notImplemented} kind;
        A_pos pos;
+       S_symbol dec_type;
        union {A_var var;
 	      /* nil; - needs only the pos */
 	      int intt;
@@ -121,6 +122,7 @@ struct A_dec_
 struct A_ty_ {enum {A_nameTy, A_recordTy, A_arrayTy, A_objectTy, A_numTy, 
                     A_typeDecTy} kind;
 	      A_pos pos;
+          S_symbol dec_type;
 	      union {S_symbol name;
 		     A_fieldList record;
 		     S_symbol array;

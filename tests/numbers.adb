@@ -11,6 +11,7 @@ begin
    Get(Mike);
    Put("Enter a number Alice: ");
    Get(Alice);
+   John_Smith := Mike + F;
    John_Smith := 3*Mike + 2*Alice + 2#1011#;
    Put("3*Mike + 2*Alice + 11 is ");
    Put(John_Smith);

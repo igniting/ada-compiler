@@ -54,7 +54,7 @@ COMMENT             --[^\n]*
 (?i:AND)        { adjust(); return(AND);}
 (?i:ARRAY)      { adjust(); return(ARRAY);}
 (?i:AT)         { adjust(); return(AT);}
-(?i:BegiN)      { adjust(); return(BegiN);}
+(?i:BEGIN)      { adjust(); return(BegiN);}
 (?i:BODY)       { adjust(); return(BODY);}
 (?i:CASE)       { adjust(); return(CASE);}
 (?i:CONSTANT)   { adjust(); return(CONSTANT);}
@@ -81,7 +81,7 @@ COMMENT             --[^\n]*
 (?i:MOD)        { adjust(); return(MOD);}
 (?i:NEW)        { adjust(); return(NEW);}
 (?i:NOT)        { adjust(); return(NOT);}
-(?i:NuLL)       { adjust(); return(NuLL);}
+(?i:NULL)       { adjust(); return(NuLL);}
 (?i:OF)         { adjust(); return(OF);}
 (?i:OR)         { adjust(); return(OR);}
 (?i:OTHERS)     { adjust(); return(OTHERS);}
@@ -139,10 +139,10 @@ COMMENT             --[^\n]*
 "<<"            { adjust(); return(LT_LT);}
 ">>"            { adjust(); return(GT_GT);}
 "<>"            { adjust(); return(BOX);}
-{IDENTIFIER}    { adjust(); yylval.sval = String(yytext); return(IDENTIFIER);}
-{NUMBER}        { adjust(); yylval.sval = String(yytext); return(NUMBER);}
-{CHARACTER}     { adjust(); yylval.sval = String(yytext); return(CHARACTER);}
-{STRING}        { adjust(); yylval.sval = String(yytext); return(STRING);}
+{IDENTIFIER}    { adjust(); yylval.sval = toStrUpper(String(yytext)); return(IDENTIFIER);}
+{NUMBER}        { adjust(); yylval.sval = toStrUpper(String(yytext)); return(NUMBER);}
+{CHARACTER}     { adjust(); yylval.sval = toStrUpper(String(yytext)); return(CHARACTER);}
+{STRING}        { adjust(); yylval.sval = toStrUpper(String(yytext)); return(STRING);}
 {COMMENT}       { adjust(); continue;}
 [ \t]           { adjust(); continue;}
 [\n]            { EM_newline(); continue;}

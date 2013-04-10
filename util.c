@@ -20,3 +20,10 @@ string String(char *s)
  strcpy(p,s);
  return p;
 }
+
+string toStrUpper(string s)
+{string p = String(s);
+ int i;
+ for(i=0;i<strlen(p);i++) p[i] = toupper(p[i]);
+ return p;
+}

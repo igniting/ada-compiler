@@ -12,7 +12,7 @@ int yylex(void); /* function prototype */
 
 A_exp absyn_root;
 
-int yydebug = 1;
+int yydebug = 0;
 
 S_table table;
 
@@ -53,10 +53,10 @@ void yyerror(char *s)
             discrete_range choice discrete_with_range alternative iter_part 
             iteration reverse_opt designator id_opt label_opt procedure_call
             indexed_comp value comp_assoc private_opt use_clause subprog_spec
-            param def_id decimal_digits_constraint object_subtype_def constraint
+            param decimal_digits_constraint object_subtype_def constraint
             init_opt unconstr_array_type constr_array_type array_type range_constr_opt
             discrim_spec type_completion type_def enumeration_type integer_type
-            float_type real_type fixed_type record_def
+            float_type real_type fixed_type record_def def_id
 %type <oper> logical short_circuit relational adding multiplying membership
 %type <unaryop> unary
 /*******************************************************************************
@@ -208,17 +208,17 @@ def_id_s : def_id
 	;
 
 def_id  : IDENTIFIER
-        {$$ = A_IdentExp(EM_tokPos,S_Symbol($1));}
+        {$$ = A_StringExp(EM_tokPos,$1);}
 	;
 
 object_qualifier_opt :
         {$$ = String("");}
 	| ALIASED
-	    {$$ = String("ALIASED");}
+	    {$$ = String("");}
 	| CONSTANT
 	    {$$ = String("CONSTANT");}
 	| ALIASED CONSTANT
-	    {$$ = String("ALIASED_CONSTANT");}
+	    {$$ = String("");}
 	;
 
 object_subtype_def : subtype_ind
@@ -1449,6 +1449,7 @@ code_stmt : qualified ';'
 main() {
         table = S_empty();
         yyparse();
-        //pr_exp(stdout,absyn_root,1);
+        T_typeCheckExp(table,absyn_root);
+        pr_exp(stdout,absyn_root,1);
         return 0;
 }

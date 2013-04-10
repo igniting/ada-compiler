@@ -60,6 +60,7 @@ A_exp A_StringExp(A_pos pos, string s)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_stringExp;
  p->pos=pos;
+ p->dec_type=S_Symbol(s);
  p->u.stringg=s;
  return p;
 }
@@ -406,6 +407,7 @@ A_exp A_NameConstr(A_pos pos, A_exp name, A_exp constraint)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_nameConstr;
  p->pos=pos;
+ p->dec_type=name->dec_type;
  p->u.nameconstr.name=name;
  p->u.nameconstr.constraint=constraint;
  return p;
@@ -497,6 +499,7 @@ A_ty A_ObjectTy(A_pos pos, string qualifier, A_exp subtype, A_exp init)
 {A_ty p = checked_malloc(sizeof(*p));
  p->kind=A_objectTy;
  p->pos=pos;
+ p->dec_type=subtype->dec_type;
  p->u.obj.qualifier=qualifier;
  p->u.obj.subtype = subtype;
  p->u.obj.init= init;
