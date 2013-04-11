@@ -110,11 +110,11 @@ A_exp A_SeqExp(A_pos pos, A_expList seq)
  return p;
 }
 
-A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp)
+A_exp A_AssignExp(A_pos pos, A_exp name, A_exp exp)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_assignExp;
  p->pos=pos;
- p->u.assign.var=var;
+ p->u.assign.name=name;
  p->u.assign.exp=exp;
  return p;
 }

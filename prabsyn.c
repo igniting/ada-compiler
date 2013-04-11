@@ -109,7 +109,7 @@ void pr_exp(FILE *out, A_exp v, int d) {
    break;
  case A_assignExp:
    fprintf(out, "assignExp(\n");
-   pr_var(out, v->u.assign.var, d+1); fprintf(out, ",\n");
+   pr_exp(out, v->u.assign.name, d+1); fprintf(out, ",\n");
    pr_exp(out, v->u.assign.exp, d+1); fprintf(out, ")");
    break;
  case A_ifExp:

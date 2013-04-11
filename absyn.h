@@ -68,7 +68,7 @@ struct A_exp_
 	      struct {A_unaryOper oper; A_exp exp;} unaryOp;
 	      struct {S_symbol typ; A_efieldList fields;} record;
 	      A_expList seq;
-	      struct {A_var var; A_exp exp;} assign;
+	      struct {A_exp name; A_exp exp;} assign;
 	      struct {A_expList cond_clauses, elsee;} iff; /* elsee is optional */
 	      struct {A_exp test; A_expList stmts;} cond;
 	      struct {A_exp test;} whilee;
@@ -162,7 +162,7 @@ A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right);
 A_exp A_UnaryOpExp(A_pos pos, A_unaryOper oper, A_exp exp);
 A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields);
 A_exp A_SeqExp(A_pos pos, A_expList seq);
-A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp);
+A_exp A_AssignExp(A_pos pos, A_exp name, A_exp exp);
 A_exp A_IfExp(A_pos pos, A_expList cond_clauses, A_expList elsee);
 A_exp A_CondExp(A_pos pos, A_exp test, A_expList stmts);
 A_exp A_WhileExp(A_pos pos, A_exp test);

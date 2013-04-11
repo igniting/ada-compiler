@@ -130,7 +130,8 @@ void T_typeCheckExp(S_table table, A_exp v) {
    T_typeCheckExpList(table,v->u.seq);
    break;
  case A_assignExp:
-   //Not used
+   T_typeCheckExp(table,v->u.assign.name);
+   T_typeCheckExp(table,v->u.assign.exp);
    break;
  case A_ifExp:
    T_typeCheckExpList(table,v->u.iff.cond_clauses);
@@ -173,31 +174,98 @@ void T_typeCheckExp(S_table table, A_exp v) {
  case A_gotoExp:
    T_typeCheckExp(table,v->u.gotolabel);
    break;
+ case A_enumExp:
+   T_typeCheckExpList(table,v->u.enumids);
+   break;
+ case A_intdefExp:
+   T_typeCheckExp(table,v->u.intdef);
+   break;
+ case A_floatdefExp:
+   T_typeCheckExp(table,v->u.floatt.numdigits);
+   T_typeCheckExp(table,v->u.floatt.rangeopt);
+   break;
+ case A_fixeddefExp:
+   T_typeCheckExp(table,v->u.fixed.delta);
+   T_typeCheckExp(table,v->u.fixed.range);
+   break;
+ case A_fixeddefdigitExp:
+   T_typeCheckExp(table,v->u.fixeddig.delta);
+   T_typeCheckExp(table,v->u.fixeddig.numdigits);
+   T_typeCheckExp(table,v->u.fixeddig.rangeopt);
+   break;
+ case A_unconarraydefExp:
+   T_typeCheckExpList(table,v->u.unconarray.indexs);
+   T_typeCheckExp(table,v->u.unconarray.subtypeind);
+   break;
+ case A_conarraydefExp:
+   T_typeCheckExpList(table,v->u.conarray.iterindex);
+   T_typeCheckExp(table,v->u.conarray.subtypeind);
+   break;
+ case A_nullrecorddefExp:
+   //Nothing here
+   break;
+ case A_recorddefExp:
+   T_typeCheckExpList(table,v->u.recorddef.pragmas);
+   T_typeCheckExp(table,v->u.recorddef.complist);
+   break;
  case A_pragma:
+   //Nothing here
    break;
  case A_pragmalist:
+   T_typeCheckExp(table,v->u.pragmalist.name);
+   T_typeCheckExpList(table,v->u.pragmalist.pragmaargs);
    break; 
  case A_alternative:
+   T_typeCheckExpList(table,v->u.alternative.choices);
+   T_typeCheckExpList(table,v->u.alternative.stmts);
    break;
  case A_caseExp:
+   T_typeCheckExp(table,v->u.caseexp.header);
+   T_typeCheckExpList(table,v->u.caseexp.pragmas);
+   T_typeCheckExpList(table,v->u.caseexp.alternatives);
    break;
  case A_raiseExp:
+   T_typeCheckExp(table,v->u.nameopt);
    break;
  case A_procedure:
+   T_typeCheckExp(table,v->u.procedurename);
    break;
  case A_functionUse:
+   T_typeCheckExp(table,v->u.functionuse.name);
+   T_typeCheckExpList(table,v->u.functionuse.value);
    break;
  case A_compAssoc:
+   T_typeCheckExpList(table,v->u.compassoc.choices);
+   T_typeCheckExp(table,v->u.compassoc.expression);
    break;
  case A_compUnit:
+   T_typeCheckExpList(table,v->u.compunit.contextspec);
+   T_typeCheckExp(table,v->u.compunit.privatee);
+   T_typeCheckExp(table,v->u.compunit.unit);
+   T_typeCheckExpList(table,v->u.compunit.pragmas);
    break;
  case A_useclause:
+   T_typeCheckExp(table,v->u.useclause.type);
+   T_typeCheckExpList(table,v->u.useclause.names);
    break;
  case A_contextSpecwith:
+   T_typeCheckExpList(table,v->u.contextspecwith.withclause);
+   T_typeCheckExpList(table,v->u.contextspecwith.useclauseopt);
    break;
  case A_subprogSpec:
+   T_typeCheckExp(table,v->u.subprogSpec.name);
+   T_typeCheckExpList(table,v->u.subprogSpec.formalpart);
+   break;
+ case A_nameConstr:
+   T_typeCheckExp(table,v->u.nameconstr.name);
+   T_typeCheckExp(table,v->u.nameconstr.constraint);
+   break;
+ case A_decimalConstr:
+   T_typeCheckExp(table,v->u.decimalconstr.expression);
+   T_typeCheckExp(table,v->u.decimalconstr.rangeopt);
    break;
  case A_notImplemented:
+   //Nothing here
    break;
  default:
    assert(0); 

@@ -859,6 +859,7 @@ null_stmt : NuLL ';'
 	;
 
 assign_stmt : name IS_ASSIGNED expression ';'
+        {$$ = A_AssignExp(EM_tokPos,$1,$3);}
 	;
 
 if_stmt : IF cond_clause_s else_opt END IF ';'
