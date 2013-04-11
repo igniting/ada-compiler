@@ -47,7 +47,7 @@ struct A_var_
       };
 
 struct A_exp_
-      {enum {A_varExp, A_nilExp, A_intExp, A_stringExp, A_callExp,
+      {enum {A_varExp, A_nilExp, A_numberExp, A_stringExp, A_callExp,
 	       A_opExp, A_unaryOpExp, A_recordExp, A_seqExp, A_assignExp,
 	       A_ifExp, A_condExp, A_whileExp, A_forExp, A_loopExp, A_breakExp, A_exitExp, 
 	       A_letExp, A_arrayExp, A_returnExp, A_gotoExp, A_enumExp, A_intdefExp,
@@ -61,7 +61,7 @@ struct A_exp_
        S_symbol dec_type;
        union {A_var var;
 	      /* nil; - needs only the pos */
-	      int intt;
+	      string number;
 	      string stringg;
 	      struct {S_symbol func; A_expList args;} call;
 	      struct {A_oper oper; A_exp left; A_exp right;} op;
@@ -155,8 +155,8 @@ A_var A_FieldVar(A_pos pos, A_var var, S_symbol sym);
 A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp);
 A_exp A_VarExp(A_pos pos, A_var var);
 A_exp A_NilExp(A_pos pos);
-A_exp A_IntExp(A_pos pos, int i);
-A_exp A_StringExp(A_pos pos, string s);
+A_exp A_NumberExp(A_pos pos, string s);
+A_exp A_StringExp(A_pos pos, S_table table, string s);
 A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args);
 A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right);
 A_exp A_UnaryOpExp(A_pos pos, A_unaryOper oper, A_exp exp);

@@ -2,10 +2,11 @@
  * absyn.c - Abstract Syntax Functions. Most functions create an instance of an
  *           abstract syntax rule.
  */
-
+#include <stdio.h>
 #include "util.h"
 #include "symbol.h" /* symbol table data structures */
 #include "absyn.h"  /* abstract syntax data structures */
+#include "type.h"
 
 A_var A_SimpleVar(A_pos pos, S_symbol sym)
 {A_var p = checked_malloc(sizeof(*p));
@@ -48,19 +49,22 @@ A_exp A_NilExp(A_pos pos)
  return p;
 }
 
-A_exp A_IntExp(A_pos pos, int i)
+A_exp A_NumberExp(A_pos pos, string s)
 {A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_intExp;
+ p->kind=A_numberExp;
  p->pos=pos;
- p->u.intt=i;
+ p->dec_type=Ty_numberType(s);
+ p->u.number=s;
  return p;
 }
 
-A_exp A_StringExp(A_pos pos, string s)
+A_exp A_StringExp(A_pos pos, S_table table, string s)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_stringExp;
  p->pos=pos;
- p->dec_type=S_Symbol(s);
+ A_ty t=S_look(table,S_Symbol(s));
+ if(t==NULL) p->dec_type=S_Symbol(s);
+ else p->dec_type=t->dec_type;
  p->u.stringg=s;
  return p;
 }

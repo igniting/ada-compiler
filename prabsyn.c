@@ -79,8 +79,8 @@ void pr_exp(FILE *out, A_exp v, int d) {
  case A_nilExp:
    fprintf(out, "nilExp()");
    break;
- case A_intExp:
-   fprintf(out, "intExp(%d)", v->u.intt);
+ case A_numberExp:
+   fprintf(out, "numberExp(%s)", v->u.number);
    break;
  case A_stringExp:
    fprintf(out, "stringExp(%s)", v->u.stringg);
@@ -90,8 +90,8 @@ void pr_exp(FILE *out, A_exp v, int d) {
    pr_expList(out, v->u.call.args, d+1); fprintf(out, ")");
    break;
  case A_opExp:
-   fprintf(out, "opExp(\n");
-   indent(out, d+1); pr_oper(out, v->u.op.oper); fprintf(out, ",\n"); 
+   fprintf(out, "opExp(\n"); pr_exp(out, v->u.op.left, d+1); 
+   pr_oper(out, v->u.op.oper); fprintf(out, ",\n"); 
    pr_exp(out, v->u.op.right, d+1); fprintf(out, ")");
    break;
  case A_unaryOpExp:

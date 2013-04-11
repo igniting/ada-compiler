@@ -67,8 +67,7 @@ void yyerror(char *s)
 %type  <sval> object_qualifier_opt
 %token <oper> LT_EQ EXPON NE GE AND OR XOR MOD REM TICK DOT_DOT
 %token <unaryop> NOT ABS
-%token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE PRIVATE TYPE
-%token <ival> NUMBER
+%token <sval> IDENTIFIER CHARACTER STRING NuLL REVERSE PRIVATE TYPE NUMBER
 
 %token LT_LT
 %token BOX
@@ -208,7 +207,7 @@ def_id_s : def_id
 	;
 
 def_id  : IDENTIFIER
-        {$$ = A_StringExp(EM_tokPos,$1);}
+        {$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 object_qualifier_opt :
@@ -269,7 +268,7 @@ discrim_part_opt :
 	| discrim_part
 	    {$$ = $1;}
 	| '(' BOX ')'
-	    {$$ = A_ExpList(A_StringExp(EM_tokPos,"BOX"),NULL);}
+	    {$$ = A_ExpList(A_StringExp(EM_tokPos,table,"BOX"),NULL);}
 	;
 
 type_completion :
@@ -344,9 +343,9 @@ enum_id_s : enum_id
 	;
 
 enum_id : IDENTIFIER
-        {$$ = A_StringExp(EM_tokPos,$1);}
+        {$$ = A_StringExp(EM_tokPos,table,$1);}
 	| CHARACTER
-	    {$$ = A_StringExp(EM_tokPos,$1);}
+	    {$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 integer_type : range_spec
@@ -508,7 +507,7 @@ choice : expression
 	| discrete_with_range
 	    {$$ = $1;}
 	| OTHERS
-	    {$$ = A_StringExp(EM_tokPos,"OTHERS");}
+	    {$$ = A_StringExp(EM_tokPos,table,"OTHERS");}
 	;
 
 discrete_with_range : name range_constraint
@@ -578,7 +577,7 @@ mark : simple_name
 	;
 
 simple_name : IDENTIFIER
-        {$$ = A_StringExp(EM_tokPos,$1);}
+        {$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 compound_name : simple_name
@@ -594,11 +593,11 @@ c_name_list : compound_name
 	;
 
 used_char : CHARACTER
-        { $$ = A_StringExp(EM_tokPos,$1);}
+        { $$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 operator_symbol : STRING
-        { $$ = A_StringExp(EM_tokPos,$1);}
+        { $$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 indexed_comp : name '(' value_s ')'
@@ -628,7 +627,7 @@ selected_comp : name '.' simple_name
 	| name '.' operator_symbol
 	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,$3);}
 	| name '.' ALL
-	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,A_StringExp(EM_tokPos,"ALL"));}
+	    {$$ = A_OpExp(EM_tokPos,A_dotOp,$1,A_StringExp(EM_tokPos,table,"ALL"));}
 	;
 
 attribute : name TICK attribute_id
@@ -641,7 +640,7 @@ attribute_id : IDENTIFIER
 	;
 
 literal : NUMBER 
-	    {$$ = A_IntExp(EM_tokPos,$1);}
+	    {$$ = A_NumberExp(EM_tokPos,$1);}
 	| used_char
 	    {$$ = $1;}
 	| NuLL
@@ -915,7 +914,7 @@ loop_stmt : label_opt iteration basic_loop id_opt ';'
 label_opt :
 		{$$ = A_NilExp(EM_tokPos);}
 	| IDENTIFIER ':'
-		{$$ = A_StringExp(EM_tokPos,$1);}
+		{$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 iteration :
@@ -927,13 +926,13 @@ iteration :
 	;
 
 iter_part : FOR IDENTIFIER IN
-	    {$$ = A_StringExp(EM_tokPos,$2);}
+	    {$$ = A_StringExp(EM_tokPos,table,$2);}
 	;
 
 reverse_opt :
 	    {$$ = A_NilExp(EM_tokPos);}
 	| REVERSE
-	    {$$ = A_StringExp(EM_tokPos,$1);}
+	    {$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 basic_loop : LOOP statement_s END LOOP
@@ -1020,7 +1019,7 @@ subprog_spec : PROCEDURE compound_name formal_part_opt
 designator : compound_name
 		{$$ = $1;}
 	| STRING
-		{$$ = A_StringExp(EM_tokPos,$1);}
+		{$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 formal_part_opt :
@@ -1097,7 +1096,7 @@ limited_opt :
 use_clause : USE name_s ';'
 	{$$ = A_Useclause(EM_tokPos,A_NilExp(EM_tokPos),$2);}
 	| USE TYPE name_s ';'
-	{$$ = A_Useclause(EM_tokPos,A_StringExp(EM_tokPos,$2),$3);}
+	{$$ = A_Useclause(EM_tokPos,A_StringExp(EM_tokPos,table,$2),$3);}
 	;
 
 name_s : name
@@ -1286,7 +1285,7 @@ comp_unit : context_spec private_opt unit pragma_s
 private_opt :
  	{$$ = A_NilExp(EM_tokPos);}
 	| PRIVATE
-	{$$ = A_StringExp(EM_tokPos,$1);}
+	{$$ = A_StringExp(EM_tokPos,table,$1);}
 	;
 
 context_spec : with_clause use_clause_opt
@@ -1450,7 +1449,7 @@ code_stmt : qualified ';'
 main() {
         table = S_empty();
         yyparse();
-        T_typeCheckExp(table,absyn_root);
-        pr_exp(stdout,absyn_root,1);
+        Ty_typeCheckExp(table,absyn_root);
+        //pr_exp(stdout,absyn_root,1);
         return 0;
 }

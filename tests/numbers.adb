@@ -11,18 +11,17 @@ begin
    Get(Mike);
    Put("Enter a number Alice: ");
    Get(Alice);
-   John_Smith := Mike + F;
-   John_Smith := 3*Mike + 2*Alice + 2#1011#;
+   John_Smith := 3*Mike + Alice;
    Put("3*Mike + 2*Alice + 11 is ");
    Put(John_Smith);
    New_Line;
 
-   John_Smith := Mike + Alice + 1_000_000;
+   John_Smith := Mike + Alice + Mike;
    Put("A million more than Mike and Alice ");
    Put(John_Smith);
    New_Line;
 
-   F := F + Float(Mike) + 3.14159_265;
+   F := F + 3.14159_265;
    Put("And F as an integer is ");
    Put(Integer(F));
    New_Line;
