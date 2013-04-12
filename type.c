@@ -3,11 +3,14 @@
 #include "util.h"
 #include "symbol.h" /* symbol table data structures */
 #include "absyn.h"  /* abstract syntax data structures */
+#include "temp.h"
+#include "tree.h"
+#include "translate.h"
 #include "type.h" /* function prototype */
-#include "prabsyn.h"
 
-void Ty_typeCheckExp(S_table table, A_exp v) {
+Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
  A_ty type;
+ T_exp left,right;
  switch (v->kind) {
  case A_varExp:
    //Not used
@@ -27,16 +30,187 @@ void Ty_typeCheckExp(S_table table, A_exp v) {
  case A_opExp:
    switch(v->u.op.oper) {
    case A_plusOp:
-   case A_minusOp: 
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            return Tr_Ex(T_Binop(T_plus,left,right));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            return Tr_Ex(T_Binop(T_plus,left,right));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }       
+   case A_minusOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            return Tr_Ex(T_Binop(T_minus,left,right));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            return Tr_Ex(T_Binop(T_minus,left,right));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_timesOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            return Tr_Ex(T_Binop(T_mul,left,right));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            return Tr_Ex(T_Binop(T_mul,left,right));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_divideOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            return Tr_Ex(T_Binop(T_div,left,right));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            return Tr_Ex(T_Binop(T_div,left,right));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_eqOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_eq,left,right,NULL,NULL);
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_eq,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_neqOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_ltOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_leOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_gtOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_geOp:
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
+        if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
+            v->dec_type = Ty_int;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
+            v->dec_type = Ty_float;
+            //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+        }
+        else
+        {
+            EM_error(v->pos,"Invalid types of left and right operand for +");
+            break;
+        }
    case A_binAndOp:
+        break;
    case A_modOp:
    case A_remOp:
         Ty_typeCheckExp(table,v->u.op.left);
@@ -221,7 +395,7 @@ void Ty_typeCheckExp(S_table table, A_exp v) {
  } 
 }
 
-void Ty_typeCheckExpList(S_table table, A_expList l)
+Tr_exp Ty_typeCheckExpList(S_table table, A_expList l)
 {
    A_expList e = l;
    while(e!=NULL)

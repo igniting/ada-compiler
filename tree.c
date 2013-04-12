@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "util.h"
 #include "symbol.h"
+#include "temp.h"
 #include "tree.h"
 
 T_expList T_ExpList(T_exp head, T_expList tail)
