@@ -11,7 +11,7 @@ begin
    Get(Mike);
    Put("Enter a number Alice: ");
    Get(Alice);
-   John_Smith := 3*Mike + Alice;
+   John_Smith := 2#11#*Mike + Alice;
    Put("3*Mike + 2*Alice + 11 is ");
    Put(John_Smith);
    New_Line;
@@ -22,6 +22,7 @@ begin
    New_Line;
 
    F := F + 3.14159_265;
+   F := F + 2#1.1#;
    Put("And F as an integer is ");
    Put(Integer(F));
    New_Line;

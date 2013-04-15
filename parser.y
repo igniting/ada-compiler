@@ -1451,6 +1451,6 @@ main() {
         table = S_empty();
         yyparse();
         Ty_typeCheckExp(table,absyn_root);
-        pr_exp(stdout,absyn_root,1);
+        //pr_exp(stdout,absyn_root,1);
         return 0;
 }

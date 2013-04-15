@@ -40,6 +40,7 @@ static string skip(string s)
 { string p = String(s);
   int i,j;
   for(i=0,j=0;s[i];i++) if(s[i]!='_') p[j++]=s[i];
+  p[j]='\0';
   return p;
 }
 
@@ -54,15 +55,11 @@ float FloatBaseConverter(string s)
 {
     string n = skip(s);
     int i=0,len=0,dec=0,j,temp,store;
-    double ans=0.0;
+    float ans=0.0;
     int b = 0;
-    for(i=0;n[i]!='#';i++) {b = b*10 + n[i] - '0';}
-    if(!b) b = 10;
-    i = 0;
-	while(n[i] !='.' && n[i] != '\0' && n[i]!='#')
-	{
-	        i++;	       
-	}
+    for(i=0;n[i] && n[i]!='#';i++) {b = b*10 + (n[i] - '0');}
+    if(!n[i]) b = 10;
+    for(i=0;n[i]!='.';i++);
 	temp = i;
 	j=1;
 	for(i=temp+1;n[i] && n[i]!='#';i++)
@@ -75,7 +72,7 @@ float FloatBaseConverter(string s)
         j++;
 	}
 	j=0;	
-	for(i=temp-1;i>=0;i--)
+	for(i=temp-1;i>=0 && n[i]!='#';i--)
 	{
         if(converter(n[i])>=b || converter(n[i])==-1)
 		{
@@ -93,13 +90,13 @@ int IntBaseConverter(char* s)
     int i=0,len=0,dec=0,j,temp,store;
     int ans=0;
     int b = 0;
-    for(i=0;n[i]!='#';i++) b = b*10 + n[i] - '0';
-    if(!b) b = 10;
-    for(;n[i] && n[i]!='#';i++);
-    len = i;
+    for(i=0;n[i] && n[i]!='#';i++) b = b*10 + (n[i] - '0');
+    if(!n[i]) b = 10;
+    len = strlen(n);
+    if(n[len-1]=='#') len--;
     i = 0;
 	j=0;
-	for(i=len-1;i>=0;i--)
+	for(i=len-1;i>=0 && n[i]!='#';i--)
 	{
         if(converter(n[i])>=b || converter(n[i])==-1)
 		{
