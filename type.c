@@ -16,14 +16,12 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
    //Not used
    break;
  case A_nilExp:
-   //Nothing here
-   break;
+    return NULL;
  case A_numberExp:
-   //Nothing here
-   break;
+   if(v->dec_type=Ty_int) return Tr_Ex(T_Int((IntBaseConverter(v->u.number))));
+   return Tr_Ex(T_Float((FloatBaseConverter(v->u.number))));
  case A_stringExp:
-   //Nothing here
-   break;
+   return Tr_Ex(T_String(v->u.stringg));
  case A_callExp:
    //Not used
    break;
@@ -62,7 +60,7 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for -");
             break;
         }
    case A_timesOp:
@@ -80,7 +78,7 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for *");
             break;
         }
    case A_divideOp:
@@ -98,7 +96,7 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for /");
             break;
         }
    case A_eqOp:
@@ -108,15 +106,17 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_eq,left,right,NULL,NULL);
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_eq,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for =");
             break;
         }
    case A_neqOp:
@@ -126,15 +126,17 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for /=");
             break;
         }
    case A_ltOp:
@@ -144,15 +146,17 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for <");
             break;
         }
    case A_leOp:
@@ -162,15 +166,17 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for <=");
             break;
         }
    case A_gtOp:
@@ -180,15 +186,17 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for >");
             break;
         }
    case A_geOp:
@@ -198,30 +206,39 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
         {
             v->dec_type = Ty_int;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
         {
             v->dec_type = Ty_float;
             //return Tr_Cx(T_Cjump(T_ne,left,right,NULL,NULL));
+            break;
         }
         else
         {
-            EM_error(v->pos,"Invalid types of left and right operand for +");
+            EM_error(v->pos,"Invalid types of left and right operand for >=");
             break;
         }
    case A_binAndOp:
         break;
    case A_modOp:
+        break;
    case A_remOp:
-        Ty_typeCheckExp(table,v->u.op.left);
-        Ty_typeCheckExp(table,v->u.op.right);
+        left = unEx(Ty_typeCheckExp(table,v->u.op.left));
+        right = unEx(Ty_typeCheckExp(table,v->u.op.right));
         if(v->u.op.left->dec_type == Ty_int && v->u.op.right->dec_type == Ty_int)
+        {
             v->dec_type = Ty_int;
+            return Tr_Ex(T_Binop(T_div,left,right));
+        }
         else if(v->u.op.left->dec_type == Ty_float && v->u.op.right->dec_type == Ty_float)
+        {
             v->dec_type = Ty_float;
+            return Tr_Ex(T_Binop(T_div,left,right));
+        }
         else
         {
-            EM_error(v->pos,"Invalid types in binary operator");
+            EM_error(v->pos,"Invalid types of left and right operand for rem");
             break;
         }
    case A_tickOp:
@@ -232,6 +249,7 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
    case A_notInOp:
    case A_rangeOp:
    case A_dotOp:
+   case A_expOp:
     break;
    default: assert(0);
    }
@@ -388,8 +406,7 @@ Tr_exp Ty_typeCheckExp(S_table table, A_exp v) {
    Ty_typeCheckExp(table,v->u.decimalconstr.rangeopt);
    break;
  case A_notImplemented:
-   //Nothing here
-   break;
+   return NULL;
  default:
    assert(0); 
  } 
@@ -403,11 +420,4 @@ Tr_exp Ty_typeCheckExpList(S_table table, A_expList l)
     Ty_typeCheckExp(table,e->head);
     e = e -> tail;
    }
-}
-
-S_symbol Ty_numberType(string s)
-{ int i;
-  for(i=0;i<strlen(s) && s[i]!='.';i++);
-  if(i==strlen(s)) return Ty_int;
-  return Ty_float;
 }

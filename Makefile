@@ -45,6 +45,6 @@ tree.o: tree.c tree.h
 	
 translate.o: translate.c translate.h
 	cc -g -c translate.c
-			
+		
 clean: 
 	rm -f final *.o lex.yy.c y.tab.c y.tab.h y.output

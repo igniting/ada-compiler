@@ -30,8 +30,7 @@ typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp,
 	     A_binAndOp, A_modOp, A_remOp, A_tickOp,
 	     A_andOp, A_orOp, A_xorOp,
 	     A_inOp, A_notInOp,
-	     A_rangeOp,
-	     A_dotOp} A_oper;
+	     A_rangeOp, A_dotOp, A_expOp} A_oper;
 
 typedef enum {A_notOp, A_absOp, A_unaryplusOp, A_unaryminusOp} A_unaryOper;
 
@@ -155,7 +154,7 @@ A_var A_FieldVar(A_pos pos, A_var var, S_symbol sym);
 A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp);
 A_exp A_VarExp(A_pos pos, A_var var);
 A_exp A_NilExp(A_pos pos);
-A_exp A_NumberExp(A_pos pos, string s);
+A_exp A_NumberExp(A_pos pos, string number);
 A_exp A_StringExp(A_pos pos, S_table table, string s);
 A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args);
 A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right);

@@ -102,10 +102,24 @@ T_exp T_Name(Temp_label name)
  return p;
 }
  
-T_exp T_Const(int consti)
+T_exp T_Int(int ICONST)
 {T_exp p = (T_exp) checked_malloc(sizeof *p);
- p->kind=T_CONST;
- p->u.CONST=consti;
+ p->kind=T_INT;
+ p->u.ICONST = ICONST;
+ return p;
+}
+
+T_exp T_Float(float FCONST)
+{T_exp p = (T_exp) checked_malloc(sizeof *p);
+ p->kind=T_FLOAT;
+ p->u.FCONST = FCONST;
+ return p;
+}
+
+T_exp T_String(string SCONST)
+{T_exp p = (T_exp) checked_malloc(sizeof *p);
+ p->kind=T_STRING;
+ p->u.SCONST = SCONST;
  return p;
 }
  

@@ -56,7 +56,7 @@ A_exp A_NumberExp(A_pos pos, string s)
 {A_exp p = checked_malloc(sizeof(*p));
  p->kind=A_numberExp;
  p->pos=pos;
- p->dec_type=Ty_numberType(s);
+ p->dec_type=isInt(s)?Ty_int:Ty_float;
  p->u.number=s;
  return p;
 }

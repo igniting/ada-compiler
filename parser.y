@@ -24,8 +24,9 @@ void yyerror(char *s)
 
 %union {
 	int pos;
-	int ival;
-	string sval;
+    int ival;
+    float fval;
+    string sval;
 	A_var var;
 	A_exp exp;
 	A_dec dec;
@@ -759,7 +760,7 @@ factor : primary
 	| ABS primary
 	    {$$ = A_UnaryOpExp(EM_tokPos,A_absOp,$2);}
 	| primary EXPON primary
-	    {$$ = A_OpExp(EM_tokPos,$2,$1,$3);}
+	    {$$ = A_OpExp(EM_tokPos,A_expOp,$1,$3);}
 	;
 
 primary : literal
@@ -1450,6 +1451,6 @@ main() {
         table = S_empty();
         yyparse();
         Ty_typeCheckExp(table,absyn_root);
-        //pr_exp(stdout,absyn_root,1);
+        pr_exp(stdout,absyn_root,1);
         return 0;
 }

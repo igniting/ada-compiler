@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "util.h"
 void *checked_malloc(int len)
 {void *p = malloc(len);
@@ -28,72 +29,84 @@ string toStrUpper(string s)
  return p;
 }
 
-int toNumber(string s)
-{
- /* Code for numerals */
- int num =0;
- int i;
- for(i=0;i<strlen(s);i++)
- {
-    if(s[i]!='_')
-        num = num*10 + (s[i]-'0');
- }
- return num;
+bool isInt(string s)
+{ int i;
+  for(i=0;i<strlen(s) && s[i]!='.';i++);
+  if(i==strlen(s)) return TRUE;
+  return FALSE;
 }
 
-int converter(char c)
+static string skip(string s)
+{ string p = String(s);
+  int i,j;
+  for(i=0,j=0;s[i];i++) if(s[i]!='_') p[j++]=s[i];
+  return p;
+}
+
+static int converter(char c)
 {
 	if(c>='0' && c <= '9') return c-'0';
 	else if(c>='A' && c<='Z') return c-'A'+10;
 	return -1;
 }
-float FloatBaseConverter(int b, char* n)
+
+float FloatBaseConverter(string s)
 {
-        int i=0,len=0,dec=0,j,temp,store;
-        float ans=0;
-        len=strlen(n);
-	while(n[i] !='.' && n[i] != '\0')
+    string n = skip(s);
+    int i=0,len=0,dec=0,j,temp,store;
+    double ans=0.0;
+    int b = 0;
+    for(i=0;n[i]!='#';i++) {b = b*10 + n[i] - '0';}
+    if(!b) b = 10;
+    i = 0;
+	while(n[i] !='.' && n[i] != '\0' && n[i]!='#')
 	{
 	        i++;	       
 	}
 	temp = i;
 	j=1;
-	for(i=temp+1;i<len;i++)
+	for(i=temp+1;n[i] && n[i]!='#';i++)
 	{
 		if(converter(n[i])>=b || converter(n[i])==-1)
 		{ 	        
 			return -1;
 		}
-	        ans=ans+converter(n[i])/pow(b,j);
-	        j++;
+        ans=ans+converter(n[i])/pow(b,j);
+        j++;
 	}
 	j=0;	
 	for(i=temp-1;i>=0;i--)
 	{
-	        if(converter(n[i])>=b || converter(n[i])==-1)
+        if(converter(n[i])>=b || converter(n[i])==-1)
 		{
 			return -1;
 		}
-	        ans=ans+converter(n[i])*pow(b,j);
-	        j++;
+        ans=ans+converter(n[i])*pow(b,j);
+        j++;
 	}
 	return ans;
 }
 
-int IntBaseConverter(int b, char* n)
+int IntBaseConverter(char* s)
 {
-        int i=0,len=0,dec=0,j,temp,store;
-        int ans=0;
-        len=strlen(n);
-	j=0;	
+    string n = skip(s);
+    int i=0,len=0,dec=0,j,temp,store;
+    int ans=0;
+    int b = 0;
+    for(i=0;n[i]!='#';i++) b = b*10 + n[i] - '0';
+    if(!b) b = 10;
+    for(;n[i] && n[i]!='#';i++);
+    len = i;
+    i = 0;
+	j=0;
 	for(i=len-1;i>=0;i--)
 	{
-	        if(converter(n[i])>=b || converter(n[i])==-1)
+        if(converter(n[i])>=b || converter(n[i])==-1)
 		{
 			return -1;
 		}
-	        ans=ans+converter(n[i])*pow(b,j);
-	        j++;
+        ans=ans+converter(n[i])*pow(b,j);
+        j++;
 	}
 	return ans;
 }

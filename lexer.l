@@ -32,8 +32,8 @@ IDENTIFIER          {LETTER}(_?({LETTER}|{DIGIT}))*
 NUMERAL             {DIGIT}(_?{DIGIT})*
 EXTENDED_NUMERAL    {EXTENDED_DIGIT}(_?{EXTENDED_DIGIT})*
 EXPONENT            [eE](\+|-)?{NUMERAL}
-DECIMAL_NUMBER      {NUMERAL}(\.{NUMERAL})?{EXPONENT}?
-BASE_NUMBER         {NUMERAL}#{EXTENDED_NUMERAL}(\.{EXTENDED_NUMERAL})?#{EXPONENT}?
+DECIMAL_NUMBER      {NUMERAL}(\.{NUMERAL})?
+BASE_NUMBER         {NUMERAL}#{EXTENDED_NUMERAL}(\.{EXTENDED_NUMERAL})?#
 NUMBER              {DECIMAL_NUMBER}|{BASE_NUMBER}
 
 CHARACTER           '.'
@@ -139,10 +139,10 @@ COMMENT             --[^\n]*
 "<<"            { adjust(); return(LT_LT);}
 ">>"            { adjust(); return(GT_GT);}
 "<>"            { adjust(); return(BOX);}
-{IDENTIFIER}    { adjust(); yylval.sval = toStrUpper(String(yytext)); return(IDENTIFIER);}
-{NUMBER}        { adjust(); yylval.sval = toStrUpper(String(yytext)); return(NUMBER);}
-{CHARACTER}     { adjust(); yylval.sval = toStrUpper(String(yytext)); return(CHARACTER);}
-{STRING}        { adjust(); yylval.sval = toStrUpper(String(yytext)); return(STRING);}
+{IDENTIFIER}    { adjust(); yylval.sval = toStrUpper(yytext); return(IDENTIFIER);}
+{NUMBER}        { adjust(); yylval.sval = toStrUpper(yytext); return(NUMBER);}
+{CHARACTER}     { adjust(); yylval.sval = toStrUpper(yytext); return(CHARACTER);}
+{STRING}        { adjust(); yylval.sval = toStrUpper(yytext); return(STRING);}
 {COMMENT}       { adjust(); continue;}
 [ \t]           { adjust(); continue;}
 [\n]            { EM_newline(); continue;}

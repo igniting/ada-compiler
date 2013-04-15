@@ -54,15 +54,15 @@ switch (e->kind) {
         Temp_label t = Temp_newlabel(), f = Temp_newlabel();
         doPatch(e->u.cx.trues, t);
         doPatch(e->u.cx.falses, f);
-        return T_Eseq(T_Move(T_Temp(r), T_Const(1)),
+        return T_Eseq(T_Move(T_Temp(r), T_Int(1)),
                 T_Eseq(e->u.cx.stm,
                     T_Eseq(T_Label(f),
-                        T_Eseq(T_Move(T_Temp(r), T_Const(0)),
+                        T_Eseq(T_Move(T_Temp(r), T_Int(0)),
                             T_Eseq(T_Label(t),
                                    T_Temp(r))))));
    }
    case Tr_nx:
-        return T_Eseq(e->u.nx, T_Const(0));
+        return T_Eseq(e->u.nx, T_Int(0));
 }
 assert(0);
 }
